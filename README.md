@@ -2,6 +2,7 @@
 [image2]: assets/ab_and_or.png "image2"
 [image3]: assets/Simple_Random_Sampling.png "image3"
 [image4]: assets/Stratified_Random_Sampling.png "image4"
+[image5]: assets/goal_metrics.png "image5"
 
 # Experimental Design
 Within the experimental design portion of this course, there are three lessons:
@@ -11,7 +12,8 @@ Within the experimental design portion of this course, there are three lessons:
   - [What is an experiment](#What_is_an_experiment)
   - [What are the types of experiments?](#Types)
   - [Types of Sampling](#Types_of_Sampling)
-  - How do you measure outcomes?
+  - [Measuring Outcomes](#Measuring_Outcomes)
+  - [Creating metrics](#Creating_Metrics)
   - What are common pitfalls in experiment design?
 
 II. Statistical Considerations in Testing
@@ -39,6 +41,7 @@ Types of study depend on the amount of control over the variables in play.
 ## What are the types of experiments? <a name="Types"></a>
 ### A/B Test
 - Typical situation of an A/B Test
+
   ![image1]
 
   - ***Control group***: A-group which will get old data
@@ -46,17 +49,57 @@ Types of study depend on the amount of control over the variables in play.
   - More than two groups are possible ABC (A=control, B/C=experimental)
 
 - Between-subject vs within-subject design
+
   ![image2]
 
 
 ## Types of Sampling <a name="Types_of_Sampling"></a>
-
+While web and other online experiments have an easy time collecting data, collecting data from traditional methods involving real populations is a much more difficult proposition. The goal of sampling is to use a subset of the whole population to make inferences about the full population, so that we didn't need to record data from everyone
 - ***Simple Random Sampling***
+
   ![image3]
 
+  Randomly make draws from the population until the desired sample size
+
 - ***Stratified Random Sampling***
+
   ![image4]
+
   Subgroups are for example needed due to different population (sample) densities
+- ***Non-Proportional Sampling***
+
+- ***Non-Probabilistic Sampling***
+
+## Measuring Outcomes <a name="Measuring_Outcomes"></a>
+The ***goals*** of your study may not be the same as the way you evaluate the study's ***success***, e.g. because the goal can't be measured directly.
+
+- For example, you might include a survey to random users to have them rate their website experience on a 1-10 scale. If the addition is helpful, then we should expect the average rating to be higher for those users who are given the addition, versus those who are not. The rating scale acts as a concrete way of measuring user satisfaction. These objective features by which you evaluate performance are known as ***evaluation metrics***.
+- ***Evaluation metrics*** = Features that provide an objective measure of the success of an experimental manipulation
+
+  ![image5]
+
+- As a rule of thumb, it's a good idea to consider the ***goals*** of a study ***separate*** from the ***evaluation metrics***. 
+- It's the ***implications of the metric*** relative to the ***goal*** that matters.
+
+- ***Alternate Terminology for evaluation metrics***: 
+  - construct (social sciences)
+  - key results (KRs) or key performance indicators (KPIs) as ways of measuring progress against quarterly or annual objectives
+
+- Further study: [When You Experiment with The Wrong Metrics…](https://hackernoon.com/when-you-experiment-with-the-wrong-metrics-85c51cc594ee)
+
+
+## Creating Metrics <a name="Creating_Metrics"></a>
+
+
+
+
+
+
+
+
+
+
+
 
 ## Setup Instructions <a name="Setup_Instructions"></a>
 The following is a brief set of instructions on setting up a cloned repository.
