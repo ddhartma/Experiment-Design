@@ -16,16 +16,16 @@ Within the experimental design portion of this course, there are three lessons:
   - [Creating metrics](#Creating_Metrics)
   - What are common pitfalls in experiment design?
 
-II. Statistical Considerations in Testing
+- Statistical Considerations in Testing
   - Statistical techniques and considerations used when evaluating the data collected during an experiment.
   - Applying inferential statistics in different ways.
 
-III. A/B Testing Case Study
+- A/B Testing Case Study
   - Analyze data related to a change on a web page designed to increase purchasers of software.
 
-  - [Setup Instructions](#Setup_Instructions)
-  - [Acknowledgments](#Acknowledgments)
-  - [Further Links](#Further_Links)
+- [Setup Instructions](#Setup_Instructions)
+- [Acknowledgments](#Acknowledgments)
+- [Further Links](#Further_Links)
 
 
 ## What is an experiment? <a name="What_is_an_experiment"></a>
