@@ -14,6 +14,11 @@
 [image14]: assets/novelty_bias.png "image14"
 [image15]: assets/order_bias.png "image15"
 [image16]: assets/norm.png "image16"
+[image17]: assets/norm_eq.png "image17"
+[image18]: assets/std_norm_eq.png "image18"
+[image19]: assets/h0_h1.png "image19"
+[image20]: assets/norm_oneside_twoside.png "image20"
+[image21]: assets/anova.png "image21"
 
 # Experimental Design
 Within the experimental design portion of this course, there are three lessons:
@@ -30,6 +35,8 @@ Within the experimental design portion of this course, there are three lessons:
   - [Checking bias](#Checking_bias)
   - [Ethics in Experimentation](#Ethics)
   - [A SMART Mnemonic for Experiment Design](#SMART)
+
+- [Inference Statistics](#Inference_Statistics)
 
 - [Statistical Considerations in Testing](#Statistical_Considerations_in_Testing)
   - Statistical techniques and considerations used when evaluating the data collected during an experiment.
@@ -246,23 +253,18 @@ There's a mnemonic called SMART for teams to plan out projects that also happens
 - ***Timely***: Results must be obtainable in a reasonable time frame.
 
 
-
-
-# Statistical Considerations in Testing <a name="Statistical_Considerations_in_Testing"></a>
-Statsistics is not only needed to analyse the data. It is also needed to set up an experiment.
-
-## [Inference statistics in Python](https://towardsdatascience.com/hypothesis-testing-in-machine-learning-using-python-a0dc89e169ce)
-1. ***What is hypothesis testing?***
+# [Inference Statistics in Python](https://towardsdatascience.com/hypothesis-testing-in-machine-learning-using-python-a0dc89e169ce) <a name="Inference_Statistics"></a>
+- ***What is hypothesis testing?*** 
 
     Hypothesis testing is a statistical method that is used in making statistical decisions using experimental data. Hypothesis Testing is basically an assumption that we make about the population parameter. We need some mathematical conclusion what ever we are assuming is true.
 
     Ex : you say avg student in class is 40 or a boy is taller than girls.
 
-2. ***Why do we use it?***
+- ***Why do we use it?***
 
     Hypothesis testing is an essential procedure in statistics. A hypothesis test evaluates two mutually exclusive statements about a population to determine which statement is best supported by the sample data. When we say that a finding is statistically significant, it’s thanks to a hypothesis test.
 
-3. ***What are the basics of hypothesis?***
+- ***What are the basics of hypothesis?***
 
     The basic of hypothesis is [normalisation](https://en.wikipedia.org/wiki/Normalization_(statistics)) and [standard normalisation](https://stats.stackexchange.com/questions/10289/whats-the-difference-between-normalization-and-standardization). All hypothesis is based on these 2 terms. 
 
@@ -275,11 +277,301 @@ Statsistics is not only needed to analyse the data. It is also needed to set up 
     1. mean = median = mode
     2. Transformation: 
 
-    $$\int_\Omega \nabla u \cdot \nabla v~dx = \int_\Omega fv~dx$$
+        ![image17]
+
+- ***Standardised Normal Distribution***
+
+    1.  mean = 0 and standard deviation  = 1
+    2. Transformation:
+
+        ![image18]
+
+- ***Which are important parameters of hypothesis testing?***
+
+    - ***Null hypothesis***: In inferential statistics, the null hypothesis is a general statement or default position that there is no relationship between two measured phenomena, or no association among groups
+
+        In other words it is a basic assumption based on domain or problem knowledge.
+
+        Example : a company production is = 50 unit/per day etc.
+    
+    - ***Alternative hypothesis***: The alternative hypothesis is the hypothesis used in hypothesis testing that is contrary to the null hypothesis. It is usually taken to be that the observations are the result of a real effect (with some amount of chance variation superposed)
+
+     
+        Example : a company production is !=50 unit/per day etc.
+
+        ![image19]
+
+    - ***Level of significance*** : Refers to the degree of significance in which we accept or reject the null-hypothesis. 100% accuracy is not possible for accepting or rejecting a hypothesis, so we therefore select a level of significance that is usually 5%.
+
+        This is normally denoted with alpha(maths symbol ) and generally it is 0.05 or 5% , which means your output should be 95% confident to give similar kind of result in each sample.
+
+    - ***Type I error***: When we reject the null hypothesis, although that hypothesis was true. Type I error is denoted by ***alpha***. In hypothesis testing, the normal curve that shows the critical region is called the alpha region
+
+    - ***Type II errors***: When we accept the null hypothesis but it is false. Type II errors are denoted by ***beta***. In Hypothesis testing, the normal curve that shows the acceptance region is called the beta region.
+
+    - ***One tailed test***: A test of a statistical hypothesis, where the region of rejection is on only one side of the sampling distribution.
+
+        Example: a college has ≥ 4000 student or data science ≤ 80% org adopted.
+
+    - ***Two-tailed test***: A test in which the critical area of a distribution is two-sided and tests whether a sample is greater than or less than a certain range of values. If the sample being tested falls into either of the critical areas, the alternative hypothesis is accepted instead of the null hypothesis.
+
+        Example: a college != 4000 student or data science != 80% org adopted
+
+        ![image20]
 
 
+    - ***P-value***:  The level of statistical significance is often expressed as a p-value between 0 and 1. The smaller the p-value, the stronger the evidence that you should reject the null hypothesis.
+    If P value is less than the chosen significance level then you reject the null hypothesis i.e. you accept  alternative hypothesis. 
+
+        A p-value less than 0.05 (typically ≤ 0.05) is statistically significant. It indicates strong evidence against the null hypothesis, as there is less than a 5% probability the null is correct (and the results are random). Therefore, we reject the null hypothesis, and accept the alternative hypothesis.
+
+        However, this does not mean that there is a 95% probability that the research hypothesis is true. The p-value is conditional upon the null hypothesis being true is unrelated to the truth or falsity of the research hypothesis.
+
+         A p-value higher than 0.05 (> 0.05) is not statistically significant and indicates strong evidence for the null hypothesis. This means we retain the null hypothesis and reject the alternative hypothesis. You should note that you cannot accept the null hypothesis, we can only reject the null or fail to reject it.
+
+        A statistically significant result cannot prove that a research hypothesis is correct (as this implies 100% certainty).
+
+        Instead, we may state our results “provide support for” or “give evidence for” our research hypothesis (as there is still a slight probability that the results occurred by chance and the null hypothesis was correct – e.g. less than 5%).
+
+    - ***Degree of freedom***: You have a data set with 10 values. If you’re not estimating anything, each value can take on any number, right? Each value is completely free to vary. But suppose you want to test the population mean with a sample of 10 values, using a 1-sample t test. You now have a constraint — the estimation of the mean. What is that constraint, exactly? By definition of the mean, the following relationship must hold: The sum of all values in the data must equal n x mean, where n is the number of values in the data set.
+
+        So if a data set has 10 values, the sum of the 10 values must equal the mean x 10. If the mean of the 10 values is 3.5 (you could pick any number), this constraint requires that the sum of the 10 values must equal 10 x 3.5 = 35.
+
+        With that constraint, the first value in the data set is free to vary. Whatever value it is, it’s still possible for the sum of all 10 numbers to have a value of 35. The second value is also free to vary, because whatever value you choose, it still allows for the possibility that the sum of all the values is 35.
+
+    -  widely used ***hypothesis testing types***:
+
+        - T Test ( Student T test)
+        - Z Test
+        - ANOVA Test
+        - Chi-Square Test
+    
+    - ***T- Test***:
+        - A t-test is a type of inferential statistic  
+        - used when the data sets follow a ***normal distribution*** and may have 
+        - ***unknown variances*** 
+        - ***One sample t-test***: determines whether the sample mean is statistically different from a known or hypothesised population mean. The One Sample t Test is a parametric test.
+
+            Example :- you have 10 ages and you are checking whether avg age is 30 or not. (check code below for that using python)
+
+            ```
+            from scipy.stats import ttest_1samp
+            import numpy as np
+            
+            ages = np.genfromtxt(“ages.csv”)
+            
+            print(ages)ages_mean = np.mean(ages)
+            print(ages_mean)
+            tset, pval = ttest_1samp(ages, 30)
+            
+            print(“p-values”,pval)
+            
+            if pval < 0.05:    # alpha value is 0.05 or 5%
+                print(" we are rejecting null hypothesis")
+            else:
+                print("we are accepting null hypothesis")
+            ```
+        - ***Two sampled T-test***: compares the means of two independent groups in order to determine whether there is statistical evidence that the associated population means are significantly different. The Independent Samples t Test is a parametric test.
 
 
+            Example : is there any association between week1 and week2 ( code is given below in python)
+
+            ```
+            from scipy.stats import ttest_ind
+            import numpy as np
+            week1 = np.genfromtxt("week1.csv",  delimiter=",")
+            week2 = np.genfromtxt("week2.csv",  delimiter=",")
+            
+            print(week1)
+            print("week2 data :-\n")
+            print(week2)
+            week1_mean = np.mean(week1)
+            week2_mean = np.mean(week2)
+
+            print("week1 mean value:",week1_mean)
+            print("week2 mean value:",week2_mean)
+            
+            week1_std = np.std(week1)
+            week2_std = np.std(week2)
+            
+            print("week1 std value:",week1_std)
+            print("week2 std value:",week2_std)
+            
+            ttest,pval = ttest_ind(week1,week2)
+            print("p-value",pval)
+            
+            if pval <0.05:
+                print("we reject null hypothesis")
+            else:
+                print("we accept null hypothesis")
+            ```
+        - ***Paired sampled t-test***: also called dependent sample t-test. It’s an uni variate test that tests for a significant difference between 2 related variables. An example of this is if you where to collect the blood pressure for an individual before and after some treatment, condition, or time point.
+
+            H0 :- means difference between two sample is 0
+
+            H1:- mean difference between two sample is not 0
+
+            ```
+            import pandas as pd
+            from scipy import stats
+            df = pd.read_csv("blood_pressure.csv")
+            df[['bp_before','bp_after']].describe()
+            
+            ttest,pval = stats.ttest_rel(df['bp_before'], df['bp_after'])
+            print(pval)
+            
+            if pval<0.05:
+                print("reject null hypothesis")
+            else:
+                print("accept null hypothesis")
+            ```
+
+    - ***When should you run a Z Test?***
+     
+       You would use a Z test if:
+
+        - Your sample size is greater than 30. Otherwise, use a t test.
+        - Data points should be independent from each other. In other words, one data point isn’t related or doesn’t affect another data point.
+        - Your data should be normally distributed. However, for large sample sizes (over 30) this doesn’t always matter.
+        - Your data should be randomly selected from a population, where each item has an equal chance of being selected.
+        - Sample sizes should be equal if at all possible.
+
+        - ***One-sample Z test***
+
+            Example: Again we are using blood pressure with some mean like 156 for z-test. 
+
+            ```
+            import pandas as pd
+            from scipy import stats
+            from statsmodels.stats import weightstats as stests
+            
+            ztest ,pval = stests.ztest(df['bp_before'], x2=None, value=156)
+            print(float(pval))
+            
+            if pval<0.05:
+                print("reject null hypothesis")
+            else:
+                print("accept null hypothesis")
+            ```
+
+        - ***Two-sample Z test***
+        
+            In two sample z-test , similar to t-test here we are checking ***two independent data groups*** and deciding whether sample mean of two group is equal or not.
+
+            H0 : mean of two group is 0
+
+            H1 : mean of two group is not 0
+
+            Example : we are checking in blood data after blood and before blood data.(code in python below)
+
+            ```
+            ztest, pval1 = stests.ztest(df['bp_before'], x2=df['bp_after'], value=0, alternative='two-sided')
+            
+            print(float(pval1))
+            
+            if pval<0.05:
+                print("reject null hypothesis")
+            else:
+                print("accept null hypothesis")
+            ```
+
+    - ***ANOVA*** (F-Test): The t-test works well when dealing with two groups, but sometimes we want to compare more than two groups at the same time. The analysis of variance or ANOVA is a statistical inference test that lets you compare multiple groups at the same time.
+
+        F = Between group variability / Within group variability
+
+        ![image21]
+
+        - ***One Way F-Test***: It tells whether two or more groups are similar or not based on their mean similarity and f-score.
+
+            Example : there are 3 different categories of plants and their weights and need to check whether all 3 groups are similar or not 
+
+            ```
+            df_anova = pd.read_csv('PlantGrowth.csv')
+            df_anova = df_anova[['weight','group']]
+            
+            grps = pd.unique(df_anova.group.values)
+            d_data = {grp:df_anova['weight'][df_anova.group == grp] for grp in grps}
+            
+            F, p = stats.f_oneway(d_data['ctrl'], d_data['trt1'], d_data['trt2'])
+            
+            print("p-value for significance is: ", p)
+            
+            if p<0.05:
+                print("reject null hypothesis")
+            else:
+                print("accept null hypothesis")
+            ```
+
+        - ***Two Way F-test*** : Two way F-test is extension of 1-way f-test, it is used when we have 2 independent variable and 2+ groups. 2-way F-test does not tell which variable is dominant. If we need to check individual significance then Post-hoc testing need to be performed.
+
+
+            Now let’s take a look at the Grand mean crop yield (the mean crop yield not by any sub-group), as well the mean crop yield by each factor, as well as by the factors grouped 
+            
+            ```
+            import statsmodels.api as sm
+            from statsmodels.formula.api import olsdf_anova2 = pd.read_csv("https://raw.githubusercontent.com/Opensourcefordatascience/Data-sets/master/crop_yield.csv")
+            
+            model = ols('Yield ~ C(Fert)*C(Water)', df_anova2).fit()
+            print(f"Overall model F({model.df_model: .0f},{model.df_resid: .0f}) = {model.fvalue: .3f}, p = {model.f_pvalue: .4f}")
+            
+            res = sm.stats.anova_lm(model, typ= 2)
+            res
+            ```
+    - ***Chi-Square Test*** is applied when you have two categorical variables from a single population. It is used to determine whether there is a significant association between the two variables.
+
+        For example, in an election survey, voters might be classified by gender (male or female) and voting preference (Democrat, Republican, or Independent). We could use a chi-square test for independence to determine whether gender is related to voting preference
+
+        ```
+        df_chi = pd.read_csv('chi-test.csv')
+        contingency_table=pd.crosstab(df_chi["Gender"],df_chi["Shopping?"])
+        print('contingency_table :-\n',contingency_table)
+        
+        #Observed Values
+        Observed_Values = contingency_table.values 
+        print("Observed Values :-\n",Observed_Values)
+        
+        b=stats.chi2_contingency(contingency_table)
+        Expected_Values = b[3]
+        print("Expected Values :-\n",Expected_Values)
+        
+        no_of_rows=len(contingency_table.iloc[0:2,0])
+        no_of_columns=len(contingency_table.iloc[0,0:2])
+        ddof=(no_of_rows-1)*(no_of_columns-1)
+        print("Degree of Freedom:-",ddof)
+        alpha = 0.05
+        
+        from scipy.stats import chi2
+        chi_square=sum([(o-e)**2./e for o,e in zip(Observed_Values,Expected_Values)])
+        chi_square_statistic=chi_square[0]+chi_square[1]
+        print("chi-square statistic:-",chi_square_statistic)
+        
+        critical_value=chi2.ppf(q=1-alpha,df=ddof)
+        print('critical_value:',critical_value)
+        
+        #p-value
+        p_value=1-chi2.cdf(x=chi_square_statistic,df=ddof)
+        print('p-value:',p_value)
+
+
+        print('Significance level: ',alpha)
+        print('Degree of Freedom: ',ddof)
+        print('chi-square statistic:',chi_square_statistic)
+        print('critical_value:',critical_value)
+        print('p-value:',p_value)
+        
+        if chi_square_statistic>=critical_value:
+            print("Reject H0,There is a relationship between 2 categorical variables")
+        else:
+            print("Retain H0,There is no relationship between 2 categorical variables")
+            
+        if p_value<=alpha:
+            print("Reject H0,There is a relationship between 2 categorical variables")
+        else:
+            print("Retain H0,There is no relationship between 2 categorical variables")
+        ```
+
+# Statistical Considerations in Testing <a name="Statistical_Considerations_in_Testing"></a>
+Statsistics is not only needed to analyse the data. It is also needed to set up an experiment.
 
 ## How can statistics be used to set up an experiment? 
 
