@@ -13,6 +13,7 @@
 [image13]: assets/sampling_bias.png "image13"
 [image14]: assets/novelty_bias.png "image14"
 [image15]: assets/order_bias.png "image15"
+[image16]: assets/norm.png "image16"
 
 # Experimental Design
 Within the experimental design portion of this course, there are three lessons:
@@ -30,7 +31,7 @@ Within the experimental design portion of this course, there are three lessons:
   - [Ethics in Experimentation](#Ethics)
   - [A SMART Mnemonic for Experiment Design](#SMART)
 
-- Statistical Considerations in Testing
+- [Statistical Considerations in Testing](#Statistical_Considerations_in_Testing)
   - Statistical techniques and considerations used when evaluating the data collected during an experiment.
   - Applying inferential statistics in different ways.
 
@@ -41,7 +42,7 @@ Within the experimental design portion of this course, there are three lessons:
 - [Acknowledgments](#Acknowledgments)
 - [Further Links](#Further_Links)
 
-
+# Concepts of Experiment Design
 ## What is an experiment? <a name="What_is_an_experiment"></a>
 Key features of an experiment:
 1.	***Comparison***: Comparison between groups
@@ -243,6 +244,65 @@ There's a mnemonic called SMART for teams to plan out projects that also happens
 - ***Achievable***: The steps taken for the experiment and the goals must be realistic.
 - ***Relevant***: The experiment needs to have purpose behind it.
 - ***Timely***: Results must be obtainable in a reasonable time frame.
+
+
+
+
+# Statistical Considerations in Testing <a name="Statistical_Considerations_in_Testing"></a>
+Statsistics is not only needed to analyse the data. It is also needed to set up an experiment.
+
+## [Inference statistics in Python](https://towardsdatascience.com/hypothesis-testing-in-machine-learning-using-python-a0dc89e169ce)
+1. ***What is hypothesis testing?***
+
+    Hypothesis testing is a statistical method that is used in making statistical decisions using experimental data. Hypothesis Testing is basically an assumption that we make about the population parameter. We need some mathematical conclusion what ever we are assuming is true.
+
+    Ex : you say avg student in class is 40 or a boy is taller than girls.
+
+2. ***Why do we use it?***
+
+    Hypothesis testing is an essential procedure in statistics. A hypothesis test evaluates two mutually exclusive statements about a population to determine which statement is best supported by the sample data. When we say that a finding is statistically significant, it’s thanks to a hypothesis test.
+
+3. ***What are the basics of hypothesis?***
+
+    The basic of hypothesis is [normalisation](https://en.wikipedia.org/wiki/Normalization_(statistics)) and [standard normalisation](https://stats.stackexchange.com/questions/10289/whats-the-difference-between-normalization-and-standardization). All hypothesis is based on these 2 terms. 
+
+    ![image16]
+
+    - a standardized normal distribution has a ***mean = 0*** and ***variance = 1***. 
+    - This concept of z-score comes in picture when we use standardised normal data.
+
+- ***Normal Distribution***
+    1. mean = median = mode
+    2. Transformation: 
+
+    $$\int_\Omega \nabla u \cdot \nabla v~dx = \int_\Omega fv~dx$$
+
+
+
+
+
+## How can statistics be used to set up an experiment? 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
