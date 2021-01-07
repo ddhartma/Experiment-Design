@@ -19,6 +19,11 @@
 [image19]: assets/h0_h1.png "image19"
 [image20]: assets/norm_oneside_twoside.png "image20"
 [image21]: assets/anova.png "image21"
+[image22]: assets/accept_reject.png "image22"
+[image23]: assets/one_sided.png "image23"
+[image24]: assets/two_sided.png "image24"
+[image25]: assets/stat_error.png "image25"
+[image26]: assets/stat_error2.png "image26"
 
 # Experimental Design
 Within the experimental design portion of this course, there are three lessons:
@@ -256,7 +261,7 @@ There's a mnemonic called SMART for teams to plan out projects that also happens
 # [Inference Statistics in Python](https://towardsdatascience.com/hypothesis-testing-in-machine-learning-using-python-a0dc89e169ce) <a name="Inference_Statistics"></a>
 - ***What is hypothesis testing?***
 
-    Hypothesis testing is a statistical method used for making decisions based on experimental data. It's basically an assumption that we make about the population parameter.
+    A hypothesis is “an idea that can be tested”. Hypothesis testing is a statistical method used for making decisions based on experimental data. It's basically an assumption that we make about the population parameter.
 
 
 - ***What are the basics of hypothesis testing?***
@@ -278,39 +283,69 @@ There's a mnemonic called SMART for teams to plan out projects that also happens
 
         <img src="https://render.githubusercontent.com/render/math?math=X_{new}=\frac{x - \mu}{\sigma}" width="200px">
 
-- ***Which are important parameters of hypothesis testing?***
+- ***What are important parameters of hypothesis testing?***
 
-    - ***Null hypothesis***: it's a an assumption/statement about the (probability) distribution of one or more random variables.
+    - ***Null hypothesis***: The null hypothesis is the hypothesis to be  tested.
 
-        Example: Because one suspects that there is a fundamental difference between men and women with regard to a certain test result, one initially assumes that there is ***no difference***. This assumption is the null hypothesis. One tries to answer the question whether the test result differs statistically significantly between the groups. The null hypothesis in this case would be that the mean results of men and women are the same:
+      It is the status-quo. Everything which was believed until now that we are contesting with our test.
+
+      The concept of the null is similar to: innocent until proven guilty. We assume innocence until we have enough evidence to prove that a suspect is guilty.
 
         <img src="https://render.githubusercontent.com/render/math?math=H_{0}: \mu_{1} = \mu_{2}" width="200px">
 
 
-    - ***Alternative hypothesis***: The alternative hypothesis is the hypothesis used in hypothesis testing that is contrary to the null hypothesis. It is usually taken to be that the observations are ***the result of a real effect***:
+    - ***Alternative hypothesis***: The alternative hypothesis is the change or innovation that is contesting the status-quo.
+
+      Usually the alternative is our own opinion. The idea is the following:
+      If the null is the status-quo (i.e., what is generally believed), then the act of performing a test, shows we have doubts about the truthfulness of the null. More often than not the researcher’s opinion is contained in the alternative hypothesis.
 
 
-        <img src="https://render.githubusercontent.com/render/math?math=H_{1}: \mu_{1} \neq \mu_{2}" width="200px">
+      <img src="https://render.githubusercontent.com/render/math?math=H_{1}: \mu_{1} \neq \mu_{2}" width="200px">
 
         ![image19]
 
-    - ***Level of significance*** : Refers to the degree of significance in which we accept or reject the null-hypothesis. 100% accuracy is not possible for accepting or rejecting a hypothesis, so we therefore select a level of significance that is usually 5%.
+    - ***Decisions you can take***:
+      - ***accept*** the null hypothesis. To accept the null means that there isn’t enough data to support the change or the innovation brought by the alternative.
+      - ***reject*** the null hypothesis. To reject the null means that there is enough statistical evidence that the status-quo is not representative of the truth.
 
-        This is normally denoted with alpha(maths symbol ) and generally it is 0.05 or 5% , which means your output should be 95% confident to give similar kind of result in each sample.
+      ![image22]
 
-    - ***Type I error***: When we reject the null hypothesis, although that hypothesis was true. Type I error is denoted by ***alpha***. In hypothesis testing, the normal curve that shows the critical region is called the alpha region
+      Different ways of reporting the result:
 
-    - ***Type II errors***: When we accept the null hypothesis but it is false. Type II errors are denoted by ***beta***. In Hypothesis testing, the normal curve that shows the acceptance region is called the beta region.
+      ***Accept***:
+      - At x% significance, we accept the null hypothesis
+      - At x% significance, A is not significantly different from B
+      - At x% significance, there is not enough statistical evidence that…
+      - At x% significance, we cannot reject the null hypothesis
 
-    - ***One tailed test***: A test of a statistical hypothesis, where the region of rejection is on only one side of the sampling distribution.
+      ***Reject***:
+      - At x% significance, we reject the null hypothesis
+      - At x% significance, A is significantly different from B
+      - At x% significance, there is enough statistical evidence…
+      - At x% significance, we cannot say that *restate the null*
 
-        Example: a college has ≥ 4000 student or data science ≤ 80% org adopted.
+    - ***Level of significance***: The probability of rejecting a null hypothesis that is true; the probability of making this error.
 
-    - ***Two-tailed test***: A test in which the critical area of a distribution is two-sided and tests whether a sample is greater than or less than a certain range of values. If the sample being tested falls into either of the critical areas, the alternative hypothesis is accepted instead of the null hypothesis.
+        Common significance levels: 0.10,  0.05, 0.01
 
-        Example: a college != 4000 student or data science != 80% org adopted
+    - ***Statistical errors***
+      In general, there are two types of errors we can make while testing: Type I error (False positive) and Type II Error (False negative).
 
-        ![image20]
+    - ***Type I error***: When we reject the null hypothesis, although that hypothesis was true. The probability of committing Type I error (False positive) is equal to the significance level (α).
+
+    - ***Type II errors***: When we accept the null hypothesis but it is false. The probability of committing Type II error (False negative) is equal to the beta (β).
+
+        ![image25]
+
+        ![image26]
+
+    - ***One-sided test***: Used when the null doesn’t contain equality or inequality sign (<,>,≤,≥)
+
+        ![image23]
+
+    - ***Two-sided test***: Used when the null contains an equality (=) or an inequality sign (≠)
+
+        ![image22]
 
 
     - ***P-value***:  The level of statistical significance is often expressed as a p-value between 0 and 1. The smaller the p-value, the stronger the evidence that you should reject the null hypothesis.
