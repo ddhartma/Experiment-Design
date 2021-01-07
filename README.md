@@ -24,6 +24,9 @@
 [image24]: assets/two_sided.png "image24"
 [image25]: assets/stat_error.png "image25"
 [image26]: assets/stat_error2.png "image26"
+[image27]: assets/p_value.png "image27"
+[image28]: assets/hypo_test_table.png "image28"
+[image29]: assets/critical_val.png "image29"
 
 # Experimental Design
 Within the experimental design portion of this course, there are three lessons:
@@ -302,11 +305,12 @@ There's a mnemonic called SMART for teams to plan out projects that also happens
 
       <img src="https://render.githubusercontent.com/render/math?math=H_{1}: \mu_{1} \neq \mu_{2}" width="200px">
 
-        ![image19]
 
     - ***Decisions you can take***:
       - ***accept*** the null hypothesis. To accept the null means that there isn’t enough data to support the change or the innovation brought by the alternative.
       - ***reject*** the null hypothesis. To reject the null means that there is enough statistical evidence that the status-quo is not representative of the truth.
+
+      ![image29]
 
       ![image22]
 
@@ -348,25 +352,21 @@ There's a mnemonic called SMART for teams to plan out projects that also happens
         ![image22]
 
 
-    - ***P-value***:  The level of statistical significance is often expressed as a p-value between 0 and 1. The smaller the p-value, the stronger the evidence that you should reject the null hypothesis.
+    - ***P-value***:  The p-value is the smallest level of significance at which we can still reject the null hypothesis, given the observed sample statistic
     If P value is less than the chosen significance level then you reject the null hypothesis i.e. you accept  alternative hypothesis.
 
-        A p-value less than 0.05 (typically ≤ 0.05) is statistically significant. It indicates strong evidence against the null hypothesis, as there is less than a 5% probability the null is correct (and the results are random). Therefore, we reject the null hypothesis, and accept the alternative hypothesis.
+        ![image27]
+        
+        Here is a link to a [p_value claculator](#https://www.socscistatistics.com/pvalues/)
 
-        However, this does not mean that there is a 95% probability that the research hypothesis is true. The p-value is conditional upon the null hypothesis being true is unrelated to the truth or falsity of the research hypothesis.
 
-         A p-value higher than 0.05 (> 0.05) is not statistically significant and indicates strong evidence for the null hypothesis. This means we retain the null hypothesis and reject the alternative hypothesis. You should note that you cannot accept the null hypothesis, we can only reject the null or fail to reject it.
+    - ***Degree of freedom***: Degrees of Freedom refers to the maximum number of logically independent values, which are values that have the freedom to vary, in the data sample. 
 
-        A statistically significant result cannot prove that a research hypothesis is correct (as this implies 100% certainty).
+        Example: dataset with 10 values
 
-        Instead, we may state our results “provide support for” or “give evidence for” our research hypothesis (as there is still a slight probability that the results occurred by chance and the null hypothesis was correct – e.g. less than 5%).
-
-    - ***Degree of freedom***: You have a data set with 10 values. If you’re not estimating anything, each value can take on any number, right? Each value is completely free to vary. But suppose you want to test the population mean with a sample of 10 values, using a 1-sample t test. You now have a constraint — the estimation of the mean. What is that constraint, exactly? By definition of the mean, the following relationship must hold: The sum of all values in the data must equal n x mean, where n is the number of values in the data set.
-
-        So if a data set has 10 values, the sum of the 10 values must equal the mean x 10. If the mean of the 10 values is 3.5 (you could pick any number), this constraint requires that the sum of the 10 values must equal 10 x 3.5 = 35.
-
-        With that constraint, the first value in the data set is free to vary. Whatever value it is, it’s still possible for the sum of all 10 numbers to have a value of 35. The second value is also free to vary, because whatever value you choose, it still allows for the possibility that the sum of all the values is 35.
-
+        - no calculation: 10 degrees of freedom (each datapoint is free to choose)
+        - with an estimation (e.g. mean) - one constraint -> sum_total = 10 x mean 
+    
     -  widely used ***hypothesis testing types***:
 
         - T Test ( Student T test)
@@ -374,79 +374,82 @@ There's a mnemonic called SMART for teams to plan out projects that also happens
         - ANOVA Test
         - Chi-Square Test
 
-    - ***T- Test***:
-        - A t-test is a type of inferential statistic  
-        - used when the data sets follow a ***normal distribution*** and may have
-        - ***unknown variances***
-        - ***One sample t-test***: determines whether the sample mean is statistically different from a known or hypothesised population mean. The One Sample t Test is a parametric test.
+        ![image28]
+    - ***Python SciPy to test for Hypothesis Testing***
+        - SciPy [ttest_1samp](https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.ttest_1samp.html)
+            ```
+            scipy.stats.ttest_1samp(
+                a, # array like input
+                popmean, # Expected value in null hypothesis (float or array_like)
+                axis=0, # Axis along which to compute test; default is 0. If None, compute over the whole array a.
+                nan_policy='propagate', # Defines how to handle when input contains nan
+                alternative='two-sided') # 'less' -> one-sided, 'greater'  -> one-sided
+            ```
 
-            Example :- you have 10 ages and you are checking whether avg age is 30 or not. (check code below for that using python)
+    - ***T- Test***:
+        - ***One sample - two sided - Student's t-test***: determines whether the sample mean is statistically different from a known or hypothesised population mean.
+
+            Example : You have 10 ages and you are checking whether avg age is 30 or not. 
+
+            <img src="https://render.githubusercontent.com/render/math?math=H_{0}: \mu = 30" width="100px">
+            - 
+            <img src="https://render.githubusercontent.com/render/math?math=H_{1}: \mu \neq 30" width="100px">
 
             ```
+            # One sample - two sided - Student's t-test
             from scipy.stats import ttest_1samp
             import numpy as np
 
             ages = np.genfromtxt(“ages.csv”)
 
-            print(ages)ages_mean = np.mean(ages)
+            print(ages)
+            ages_mean = np.mean(ages)
             print(ages_mean)
             tset, pval = ttest_1samp(ages, 30)
 
-            print(“p-values”,pval)
+            print(“p-values”, pval)
 
             if pval < 0.05:    # alpha value is 0.05 or 5%
-                print(" we are rejecting null hypothesis")
+                print("reject null hypothesis")
             else:
-                print("we are accepting null hypothesis")
+                print("accept null hypothesis")
             ```
-        - ***Two sampled T-test***: compares the means of two independent groups in order to determine whether there is statistical evidence that the associated population means are significantly different. The Independent Samples t Test is a parametric test.
 
+        - ***Two (independent) samples - two sided - Student's t-test***: compares the means of two independent groups in order to determine whether there is statistical evidence that the associated population means are significantly different.
 
-            Example : is there any association between week1 and week2 ( code is given below in python)
+            Example : is there any association between data1 and data2 
+
+            <img src="https://render.githubusercontent.com/render/math?math=H_{0}: \mu_{1} = \mu_{2}" width="100px">
+            - 
+            <img src="https://render.githubusercontent.com/render/math?math=H_{1}: \mu_{1} \neq \mu_{2}" width="100px">
 
             ```
+            # Two (independent) samples - two sided - Student's t-test
             from scipy.stats import ttest_ind
-            import numpy as np
-            week1 = np.genfromtxt("week1.csv",  delimiter=",")
-            week2 = np.genfromtxt("week2.csv",  delimiter=",")
 
-            print(week1)
-            print("week2 data :-\n")
-            print(week2)
-            week1_mean = np.mean(week1)
-            week2_mean = np.mean(week2)
+            data1 = [0.873, 2.817, 0.121, -0.945, -0.055, -1.436, 0.360, -1.478, -1.637, -1.869]
+            data2 = [1.142, -0.432, -0.938, -0.729, -0.846, -0.157, 0.500, 1.183, -1.075, -0.169]
+            stat, p = ttest_ind(data1, data2)
+            print('stat=%.3f, p=%.3f' % (stat, p))
 
-            print("week1 mean value:",week1_mean)
-            print("week2 mean value:",week2_mean)
-
-            week1_std = np.std(week1)
-            week2_std = np.std(week2)
-
-            print("week1 std value:",week1_std)
-            print("week2 std value:",week2_std)
-
-            ttest,pval = ttest_ind(week1,week2)
-            print("p-value",pval)
-
-            if pval <0.05:
-                print("we reject null hypothesis")
+            if pval<0.05:
+                print("reject null hypothesis")
             else:
-                print("we accept null hypothesis")
+                print("accept null hypothesis")
             ```
-        - ***Paired sampled t-test***: also called dependent sample t-test. It’s an uni variate test that tests for a significant difference between 2 related variables. An example of this is if you where to collect the blood pressure for an individual before and after some treatment, condition, or time point.
+        - ***Two (dependent/paired) samples - two sided - Student's t-test***: Test for a significant difference between 2 related variables. An example of this is if you where to collect the blood pressure for an individual before and after some treatment, condition, or time point.
 
-            H0 :- means difference between two sample is 0
-
-            H1:- mean difference between two sample is not 0
+            <img src="https://render.githubusercontent.com/render/math?math=H_{0}: \mu_{1} - \mu_{2} = 0" width="150px">
+            - 
+            <img src="https://render.githubusercontent.com/render/math?math=H_{1}: \mu_{1} - \mu_{2} \neq 0" width="150px">
 
             ```
-            import pandas as pd
-            from scipy import stats
-            df = pd.read_csv("blood_pressure.csv")
-            df[['bp_before','bp_after']].describe()
-
-            ttest,pval = stats.ttest_rel(df['bp_before'], df['bp_after'])
-            print(pval)
+            # Two (dependent/paired) samples - two sided - Student's t-test
+            from scipy.stats import ttest_rel
+            data1 = [0.873, 2.817, 0.121, -0.945, -0.055, -1.436, 0.360, -1.478, -1.637, -1.869]
+            data2 = [1.142, -0.432, -0.938, -0.729, -0.846, -0.157, 0.500, 1.183, -1.075, -0.169]
+            stat, p = ttest_rel(data1, data2)
+            print('stat=%.3f, p=%.3f' % (stat, p))
 
             if pval<0.05:
                 print("reject null hypothesis")
@@ -464,16 +467,23 @@ There's a mnemonic called SMART for teams to plan out projects that also happens
         - Your data should be randomly selected from a population, where each item has an equal chance of being selected.
         - Sample sizes should be equal if at all possible.
 
-        - ***One-sample Z test***
+        - Use [statsmodels ztest](https://www.statsmodels.org/stable/generated/statsmodels.stats.weightstats.ztest.html)
+
+        - ***One-sample - two sided - z-test***
 
             Example: Again we are using blood pressure with some mean like 156 for z-test.
 
+            <img src="https://render.githubusercontent.com/render/math?math=H_{0}: \mu = 156" width="100px">
+            - 
+            <img src="https://render.githubusercontent.com/render/math?math=H_{1}: \mu \neq 156" width="100px">
+
             ```
+            # One-sample - two sided - z-test
             import pandas as pd
             from scipy import stats
             from statsmodels.stats import weightstats as stests
 
-            ztest ,pval = stests.ztest(df['bp_before'], x2=None, value=156)
+            ztest, pval = stests.ztest(df['bp_before'], x2=None, value=156)
             print(float(pval))
 
             if pval<0.05:
@@ -482,17 +492,17 @@ There's a mnemonic called SMART for teams to plan out projects that also happens
                 print("accept null hypothesis")
             ```
 
-        - ***Two-sample Z test***
+        - ***Two (independent) samples - two sided - z-test***
+            In two sample z-test , similar to t-test here we are checking ***two independent data groups*** and deciding whether sample mean of two groups is equal or not.
 
-            In two sample z-test , similar to t-test here we are checking ***two independent data groups*** and deciding whether sample mean of two group is equal or not.
-
-            H0 : mean of two group is 0
-
-            H1 : mean of two group is not 0
+            <img src="https://render.githubusercontent.com/render/math?math=H_{0}: \mu_{1} = \mu_{2}" width="100px">
+            - 
+            <img src="https://render.githubusercontent.com/render/math?math=H_{1}: \mu_{1} \neq \mu_{2}" width="100px">
 
             Example : we are checking in blood data after blood and before blood data.(code in python below)
 
             ```
+            # Two (independent) samples - two sided - z-test
             ztest, pval1 = stests.ztest(df['bp_before'], x2=df['bp_after'], value=0, alternative='two-sided')
 
             print(float(pval1))
@@ -747,8 +757,7 @@ def main():
 ## Further Links <a name="Further_Links"></a>
 ## Links
 * [Correlation does not imply causation](https://en.wikipedia.org/wiki/Correlation_does_not_imply_causation)
-
-
+* [17 Statistical Hypothesis Tests in Python ](https://machinelearningmastery.com/statistical-hypothesis-tests-in-python-cheat-sheet/)
 
 Git/Github
 * [GitFlow](https://datasift.github.io/gitflow/IntroducingGitFlow.html)
