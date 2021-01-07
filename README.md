@@ -391,9 +391,9 @@ There's a mnemonic called SMART for teams to plan out projects that also happens
 
             Example : You have 10 ages and you are checking whether avg age is 30 or not. 
 
-            <img src="https://render.githubusercontent.com/render/math?math=H_{0}: \mu = 30" width="100px">
-            - 
-            <img src="https://render.githubusercontent.com/render/math?math=H_{1}: \mu \neq 30" width="100px">
+            - <img src="https://render.githubusercontent.com/render/math?math=H_{0}: \mu = 30" width="100px">
+            
+            - <img src="https://render.githubusercontent.com/render/math?math=H_{1}: \mu \neq 30" width="100px">
 
             ```
             # One sample - two sided - Student's t-test
@@ -419,9 +419,8 @@ There's a mnemonic called SMART for teams to plan out projects that also happens
 
             Example : is there any association between data1 and data2 
 
-            <img src="https://render.githubusercontent.com/render/math?math=H_{0}: \mu_{1} = \mu_{2}" width="100px">
-            - 
-            <img src="https://render.githubusercontent.com/render/math?math=H_{1}: \mu_{1} \neq \mu_{2}" width="100px">
+            - <img src="https://render.githubusercontent.com/render/math?math=H_{0}: \mu_{1} = \mu_{2}" width="100px">
+            - <img src="https://render.githubusercontent.com/render/math?math=H_{1}: \mu_{1} \neq \mu_{2}" width="100px">
 
             ```
             # Two (independent) samples - two sided - Student's t-test
@@ -439,9 +438,8 @@ There's a mnemonic called SMART for teams to plan out projects that also happens
             ```
         - ***Two (dependent/paired) samples - two sided - Student's t-test***: Test for a significant difference between 2 related variables. An example of this is if you where to collect the blood pressure for an individual before and after some treatment, condition, or time point.
 
-            <img src="https://render.githubusercontent.com/render/math?math=H_{0}: \mu_{1} - \mu_{2} = 0" width="150px">
-            - 
-            <img src="https://render.githubusercontent.com/render/math?math=H_{1}: \mu_{1} - \mu_{2} \neq 0" width="150px">
+            - <img src="https://render.githubusercontent.com/render/math?math=H_{0}: \mu_{1} - \mu_{2} = 0" width="150px">
+            - <img src="https://render.githubusercontent.com/render/math?math=H_{1}: \mu_{1} - \mu_{2} \neq 0" width="150px">
 
             ```
             # Two (dependent/paired) samples - two sided - Student's t-test
@@ -473,9 +471,8 @@ There's a mnemonic called SMART for teams to plan out projects that also happens
 
             Example: Again we are using blood pressure with some mean like 156 for z-test.
 
-            <img src="https://render.githubusercontent.com/render/math?math=H_{0}: \mu = 156" width="100px">
-            - 
-            <img src="https://render.githubusercontent.com/render/math?math=H_{1}: \mu \neq 156" width="100px">
+            - <img src="https://render.githubusercontent.com/render/math?math=H_{0}: \mu = 156" width="100px">
+            - <img src="https://render.githubusercontent.com/render/math?math=H_{1}: \mu \neq 156" width="100px">
 
             ```
             # One-sample - two sided - z-test
@@ -495,9 +492,8 @@ There's a mnemonic called SMART for teams to plan out projects that also happens
         - ***Two (independent) samples - two sided - z-test***
             In two sample z-test , similar to t-test here we are checking ***two independent data groups*** and deciding whether sample mean of two groups is equal or not.
 
-            <img src="https://render.githubusercontent.com/render/math?math=H_{0}: \mu_{1} = \mu_{2}" width="100px">
-            - 
-            <img src="https://render.githubusercontent.com/render/math?math=H_{1}: \mu_{1} \neq \mu_{2}" width="100px">
+            - <img src="https://render.githubusercontent.com/render/math?math=H_{0}: \mu_{1} = \mu_{2}" width="100px">
+            - <img src="https://render.githubusercontent.com/render/math?math=H_{1}: \mu_{1} \neq \mu_{2}" width="100px">
 
             Example : we are checking in blood data after blood and before blood data.(code in python below)
 
