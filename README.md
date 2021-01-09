@@ -14,6 +14,11 @@
 [image14]: assets/novelty_bias.png "image14"
 [image15]: assets/order_bias.png "image15"
 
+[image16]: assets/A_B_Test.png "image16"
+[image17]: assets/metric_hypo.png "image17"
+[image18]: assets/experiment_1.png "image18"
+[image19]: assets/experiment_2.png "image19"
+
 
 # Experimental Design
 Within the experimental design portion of this course, there are three lessons:
@@ -31,13 +36,12 @@ Within the experimental design portion of this course, there are three lessons:
   - [Ethics in Experimentation](#Ethics)
   - [A SMART Mnemonic for Experiment Design](#SMART)
 
-- [Inference Statistics](#Inference_Statistics)
 
 - [Statistical Considerations in Testing](#Statistical_Considerations_in_Testing)
   - Statistical techniques and considerations used when evaluating the data collected during an experiment.
   - Applying inferential statistics in different ways.
 
-- A/B Testing Case Study
+- [A/B Testing Case Study](#A_B_Testing)
   - Analyze data related to a change on a web page designed to increase purchasers of software.
 
 - [Setup Instructions](#Setup_Instructions)
@@ -269,15 +273,139 @@ Statsistics is not only needed to analyse the data. It is also needed to set up 
 
 
 
+# A/B Testing Case Study <a name="A_B_Testing"></a>
+## Overview
+- A/B tests are used to test changes on a web page by running an experiment where a control group sees the old version, while the experiment group sees the new version. 
+- A metric is then chosen to measure the level of engagement from users in each group. 
+- These results are then used to judge whether one version is more effective than the other. 
+-A/B testing is very much like hypothesis testing with the following hypotheses:
+    - Null Hypothesis: The new version is no better, or even worse, than the old version
+    - Alternative Hypothesis: The new version is better than the old version
+
+    ![image16]
+
+## Experiment I 
+- The first change Audacity wants to try is on their homepage. They hope that this new, more engaging design will increase the number of users that explore their courses, that is, move on to the second stage of the funnel. 
+
+    ![image18]
+
+## Metric and Hypothesis
+- Metric = feature that provide an objective measure of the success of an experimental manipulation
+- e.g. Click Through Rate
+- Here's the customer funnel for typical new users on their site:
+
+    View home page > Explore courses > View course overview page > Enroll in course > Complete course
 
 
+    ![image17]
+
+- Open notebook under ```notebooks/Homepage Experiment Data.ipynb```
 
 
+## Experiment II
+- The second change Audacity is A/B testing is a more career focused description on a course overview page.
+- They hope that this change may encourage more users to enroll and complete this course. 
+- In this experiment, we’re going to analyze the following metrics:
 
+    - Enrollment Rate: Click through rate for the Enroll button the course overview page
+    - Average Reading Duration: Average number of seconds spent on the course overview page
+    - Average Classroom Time: Average number of days spent in the classroom for students enrolled in the course
+    - Completion Rate: Course completion rate for students enrolled in the course
 
+    ![image19]
 
+    - Open notebook under ```notebooks/enrollment_rate.ipynb```
+    ```
+    import numpy as np
+    import pandas as pd
+    import matplotlib.pyplot as plt
+    % matplotlib inline
 
+    np.random.seed(42)
 
+    df = pd.read_csv('course_page_actions.csv')
+    df.head()
+
+    # Get dataframe with all records from control group
+    control_df = df.query('group == "control"')
+
+    # Compute click through rate for control group
+    control_ctr = control_df.query('action == "enroll"').id.nunique() / control_df.query('action == "view"').id.nunique()
+
+    # Display click through rate
+    control_ctr
+
+    # Get dataframe with all records from control group
+    experiment_df = df.query('group == "experiment"')
+
+    # Compute click through rate for experiment group
+    experiment_ctr = experiment_df.query('action == "enroll"').id.nunique() / experiment_df.query('action == "view"').id.nunique()
+
+    # Display click through rate
+    experiment_ctr
+
+    # Compute the observed difference in click through rates
+    obs_diff = experiment_ctr - control_ctr
+
+    # Display observed difference
+    obs_diff
+
+    # Create a sampling distribution of the difference in proportions
+    # with bootstrapping
+    diffs = []
+    size = df.shape[0]
+    for _ in range(10000):
+        b_samp = df.sample(size, replace=True)
+        control_df = b_samp.query('group == "control"')
+        experiment_df = b_samp.query('group == "experiment"')
+        control_ctr = control_df.query('action == "enroll"').id.nunique() / control_df.query('action == "view"').id.nunique()
+        experiment_ctr = experiment_df.query('action == "enroll"').id.nunique() / experiment_df.query('action == "view"').id.nunique()
+        diffs.append(experiment_ctr - control_ctr)
+
+    # Convert to numpy array
+    diffs = np.array(diffs)
+    # Plot sampling distribution
+    plt.hist(diffs);
+
+    # Simulate distribution under the null hypothesis
+    null_vals = np.random.normal(0, diffs.std(), diffs.size)
+    # Plot the null distribution
+    plt.hist(null_vals);
+
+    # Plot observed statistic with the null distibution
+    plt.hist(null_vals);
+    plt.axvline(obs_diff, c='red')
+
+    # Compute p-value
+    (null_vals > obs_diff).mean()
+
+    # Result: We have evidence to reject the Null hypothesis
+    ```
+
+For further metrics evaluation check:
+- Open notebook under ```notebooks/average_classroom_time.ipynb```
+- Open notebook under ```notebooks/completion_rate.ipynb```
+
+- Result: Completion Rate - the null cannot be rejected --> Problem? --> Bonferroni Correction
+
+## Multiple Tests - Multiple Metrics - Bonferroni Correction
+- The Bonferroni Correction is one way to handle experiments with multiple tests, or metrics in this case. To compute the new bonferroni correct alpha value, we need to divide the original alpha value by the number of tests.
+
+ - <img src="https://render.githubusercontent.com/render/math?math=\alpha_{new} = \frac{\alpha}{n}" width="150px">
+
+- Since the Bonferroni method is ***too conservative*** when we expect correlation among metrics, we can better approach this problem with more sophisticated methods, such as the [closed testing procedure](https://en.wikipedia.org/wiki/Closed_testing_procedure), [Boole-Bonferroni bound](https://en.wikipedia.org/wiki/Boole%27s_inequality), and the [Holm-Bonferroni method](https://en.wikipedia.org/wiki/Holm%E2%80%93Bonferroni_method). These are less conservative and take this correlation into account.
+
+- If you do choose to use a less conservative method, just make sure the assumptions of that method are truly met in your situation, and that you're not just trying to [cheat on a p-value](https://freakonometrics.hypotheses.org/19817). Choosing a poorly suited test just to get significant results will only lead to misguided decisions that harm your company's performance in the long run.
+
+## Difficulties in A/B Testing
+- As one can see in the scenarios above, there are many factors to consider when designing an A/B test and drawing conclusions based on its results. To conclude, here are some common ones to consider.
+
+    - ***Novelty effect*** and ***change aversion*** when existing users first experience a change
+    - ***Sufficient traffic*** and conversions to have significant and repeatable results
+    - ***Best metric choice*** for making the ultimate decision (eg. measuring revenue vs. clicks)
+    - ***Long enough run time*** for the experiment to account for changes in behavior based on time of day/week or seasonal events.
+    - ***Practical significance*** of a conversion rate (the cost of launching a new feature vs. the gain from the increase in conversion)
+    - ***Consistency*** among test subjects in the control and experiment group (imbalance in the population represented in each group can lead to situations like [Simpson's Paradox](https://en.wikipedia.org/wiki/Simpson%27s_paradox))
 
 
 
