@@ -18,6 +18,11 @@
 [image17]: assets/metric_hypo.png "image17"
 [image18]: assets/experiment_1.png "image18"
 [image19]: assets/experiment_2.png "image19"
+[image20]: assets/stratified_rnd_sample.png "image20"
+[image21]: assets/practical_significance.png "image21"
+[image22]: assets/practical_significance_2.png "image22"
+[image23]: assets/stat_power.png "image23"
+[image24]: assets/dummy_test.png "image24"
 
 
 # Experimental Design
@@ -85,6 +90,7 @@ While web and other online experiments have an easy time collecting data, collec
 - ***Stratified Random Sampling***
 
   ![image4]
+  ![image20]
 
   Subgroups are for example needed due to different population (sample) densities
 - ***Non-Proportional Sampling***
@@ -113,9 +119,10 @@ The ***goals*** of your study may not be the same as the way you evaluate the st
 
 There are further terms commonly used for designing experiments:
 
-- ***Funnel***: A funnel is the flow of steps you expect a user of your product to take
+- ***Funnel***: A funnel is the flow of steps you expect that a user of your product will take
+
 Example: Online store
-  - Visit the site homepage
+  - Visit the homepage
   - Search for a desired product or click on a product category
   - Click on a product image
   - Add the product to the cart
@@ -123,7 +130,7 @@ Example: Online store
 
   ![image6]
 
-  One property to note about user funnels is that typically there will be some dropoff in the users that move from step to step. This is much like how an actual funnel narrows from a large opening to a small exit. Outside of an experiment, funnels can be used to analyze user flows. Observations from these flows can then be used to motivate experiments to try and improve the dropoff rates.
+  One property to note about user funnels is that typically there will be some ***dropoff in the users*** that move from step to step. This is much like how an actual funnel narrows from a large opening to a small exit. Outside of an experiment, funnels can be used to analyze user flows. Observations from these flows can then be used to motivate experiments to try and improve the ***dropoff rates***.
 
   It's also worth noting that the flow through a funnel might be idealized compared to actual user practice. In the above example, users might perform multiple searches in a single session, or want to purchase multiple things. A user might access the site through a specific link, subverting the top part of the funnel. Refining the funnel and being specific about the kinds of events that are expected can help you create a consistent, reliable design and analysis.
 
@@ -139,7 +146,7 @@ Example: Online store
     In tis example Unit of Diversion = cookies
 
 - ***Evaluation Metrics***:
-    - metrics on which we will compare the two groups)
+    - metrics on which we will compare the two groups
     - these are the values that will tell us if our experiment is a success or not
     - we are not limited to just one metric, one can track multiple metrics
 
@@ -255,21 +262,586 @@ There's a mnemonic called SMART for teams to plan out projects that also happens
 # Statistical Considerations in Testing <a name="Statistical_Considerations_in_Testing"></a>
 Statsistics is not only needed to analyse the data. It is also needed to set up an experiment.
 
-## How can statistics be used to set up an experiment?
+## Statistical significance?
+- Let's say that we've collected data for a web-based experiment.
+- Experiment: Test change in layout of a product information page 
+- Goal: Higher revenue based on that feature
+- Metric: cookie-based diversion
+- Invariant metric: proportion of visitors assigned to one of our conditions, significance check via a two-sided test
+- Evaluation metric: click-through rate, significance check via a one-sided test
+- condition 0 -> control group
+- condition 1 -> experimental group
+- click 0 -> no click
+- click 1 -> click
+
+
+### Checking Invariant metric
+- Open notebook ```notebooks/Statistical_Significance.ipynb```
+
+A) Analytic Approach
+```
+# get number of trials and number of 'successes'
+n_obs = data.shape[0]
+
+n_control = data.groupby('condition').size()[0]
+print(n_control)
+
+# Compute a z-score and p-value
+# probability of success
+p = 0.5
+
+# sd for binomial distribution
+sd = np.sqrt(p * (1-p) * n_obs)
+
+# z-score
+# to get a precise p-value, 0.5 = continuity correction, was added the total count before computing the area underneath the curve
+z = ((n_control + 0.5) - p * n_obs) / sd
+print(z)
+
+# p-value fpr two-sided test
+print(2 * stats.norm.cdf(z))
+
+Outcome:
+-0.506217597735
+0.612703902554
+```
+
+B) Simulation Approach
+```
+# get number of trials and number of 'successes'
+n_obs = data.shape[0]
+n_control = data.groupby('condition').size()[0]
+
+# # simulate outcomes under null, compare to observed outcome
+p = 0.5
+n_trials = 200_000
+
+samples = np.random.binomial(n_obs, p, n_trials)
+
+print(np.logical_or(samples <= n_control, samples >= (n_obs - n_control)).mean())
+
+Outcome:
+0.611725
+```
+
+### Checking the Evaluation Metric 
+
+- Open notebook ```notebooks/Statistical_Significance.ipynb```
+
+```
+p_click = data.groupby('condition').mean()['click']
+p_click
+
+Outcome:
+condition
+0    0.079430
+1    0.112205
+Name: click, dtype: float64
+```
+
+```
+p_click[1] - p_click[0]
+Outcome:
+0.03277498917523293
+```
+
+***A) Analytic Approach***
+- pooled click-through rate
+- pooled standard deviation
+- Computing the z-score and resulting p-value without a continuity correction should be closer to the simulation's outcomes
+```
+# get number of trials and overall 'success' rate under null
+n_control = data.groupby('condition').size()[0]
+n_exper = data.groupby('condition').size()[1]
+p_null = data['click'].mean()
+
+# compute standard error, z-score, and p-value
+se_p = np.sqrt(p_null * (1-p_null) * (1/n_control + 1/n_exper))
+
+z = (p_click[1] - p_click[0]) / se_p
+print(z)
+print(1-stats.norm.cdf(z))
+
+Outcome:
+1.75718873962
+0.0394428219746
+``` 
+
+***B) Simulation Approach***
+```
+# get number of trials and overall 'success' rate under null
+n_control = data.groupby('condition').size()[0]
+n_exper = data.groupby('condition').size()[1]
+p_null = data['click'].mean()
+
+# simulate outcomes under null, compare to observed outcome
+n_trials = 200_000
+
+ctrl_clicks = np.random.binomial(n_control, p_null, n_trials)
+exp_clicks = np.random.binomial(n_exper, p_null, n_trials)
+samples = exp_clicks / n_exper - ctrl_clicks / n_control
+
+print((samples >= (p_click[1] - p_click[0])).mean())
+
+Outcome:
+0.039785
+```
+
+## Practical statistical significance?
+- Even there is statistical significance of a new feature, it does not mean that it is worth to implement the new feature. 
+- The new feature must also show practical significance.
+- Practical significance refers to the level of effect that you need to observe for a true experimental success.
+
+    ![image21]
 
 
 
+- If you consider the confidence interval for an evaluation metric statistic against the null baseline and practical significance bound, there are a few cases that can come about.
+
+    - ***A) Confidence interval is fully in practical significance region***
+
+        Below, m0 indicates the null statistic value, dmin the practical significance bound, and the blue line the confidence interval for the observed statistic. We assume that we're looking for a positive change, ignoring the negative equivalent for dmin.
+
+        If the confidence interval for the statistic does not include the null or the practical significance level, then the experimental manipulation can be concluded to ***have a statistically and practically significant effect***. It is clearest in this case that the manipulation should be implemented as a success.
+    
+    - ***B) Confidence interval completely excludes any part of practical significance region***
+
+        If the confidence interval does not include any values that would be considered practically significant, this is a clear case for us to ***not implement the experimental change***. This includes the case where the metric is statistically significant, but whose interval does not extend past the practical significance bounds. With such a low chance of practical significance being achieved on the metric, we should be wary of implementing the change.
+
+    - ***C) Confidence interval includes points both inside and outside practical significance bounds*** 
+
+        This leaves the trickiest cases to consider, where the confidence interval straddles the practical significance bound. In each of these cases, there is an uncertain possibility of practical significance being achieved. In an ideal world, you would be able to collect more data to reduce our ***uncertainty***, reducing the scenario to one of the previous cases. Outside of this, you'll need to consider the risks carefully in order to make a recommendation on whether or not to follow through with a tested change. Your analysis might also reveal subsets of the population or aspects of the manipulation that do work, in order to refine further studies or experiments.
+
+    ![image22]
 
 
 
+## Experiment Size
+- Practical significance boundaries can be used to plan an experiment.
+- By knowing how many observations we need in order to detect our desired effect to our desired level of reliability, we can see how long we would need to run our experiment and whether or not it is feasible.
+- Current click-trough-rate = 10%
+- Practical significance boundary = 12% (desired click-through-rate)
+
+    ![image23]
 
 
+- Open notebook ```notebooks/Experiment_Size.ipynb``` 
 
+    - The example explored below is a one-tailed test, with the alternative value greater than the null.
+    - The power computations performed in the first part will not work if the alternative proportion is greater than the null, e.g. detecting a proportion parameter of 0.88 against a null of 0.9. You might want to try to rewrite the code to handle that case! The same issue should not show up for the second approach, where we directly compute the sample size
+    - If we need to calculate a 'Two-tail test' then we need to split the significance (i.e. our alpha value) because we're still using a calculation method for one-tail. The split in half symbolizes the significance level being appropriated to both tails. A 95% significance level has a 5% alpha; splitting the 5% alpha across both tails returns 2.5%. Taking 2.5% from 100% returns 97.5% as an input for the significance level. 
 
+    ***Method 1: Trial and Error***
+    ```
+    def power(p_null, p_alt, n, alpha = .05, plot = True):
+        """
+        Compute the power of detecting the difference in two populations with 
+        different proportion parameters, given a desired alpha rate.
+        
+        Input parameters:
+            p_null: base success rate under null hypothesis
+            p_alt : desired success rate to be detected, must be larger than
+                    p_null
+            n     : number of observations made in each group
+            alpha : Type-I error rate
+            plot  : boolean for whether or not a plot of distributions will be
+                    created
+        
+        Output value:
+            power : Power to detect the desired difference, under the null.
+        """
+        
+        # Compute the power
+        se_null = np.sqrt((p_null * (1-p_null) + p_null * (1-p_null)) / n)
+        null_dist = stats.norm(loc = 0, scale = se_null)
+        p_crit = null_dist.ppf(1 - alpha) # one-tailed test
+        
+        se_alt  = np.sqrt((p_null * (1-p_null) + p_alt  * (1-p_alt) ) / n)
+        alt_dist = stats.norm(loc = p_alt - p_null, scale = se_alt)
+        beta = alt_dist.cdf(p_crit)
+        
+        if plot:
+            # Compute distribution heights
+            low_bound = null_dist.ppf(.01)
+            high_bound = alt_dist.ppf(.99)
+            x = np.linspace(low_bound, high_bound, 201)
+            y_null = null_dist.pdf(x)
+            y_alt = alt_dist.pdf(x)
 
+            # Plot the distributions
+            plt.plot(x, y_null)
+            plt.plot(x, y_alt)
+            plt.vlines(p_crit, 0, np.amax([null_dist.pdf(p_crit), alt_dist.pdf(p_crit)]),
+                    linestyles = '--')
+            plt.fill_between(x, y_null, 0, where = (x >= p_crit), alpha = .5)
+            plt.fill_between(x, y_alt , 0, where = (x <= p_crit), alpha = .5)
+            
+            plt.legend(['null','alt'])
+            plt.xlabel('difference')
+            plt.ylabel('density')
+            plt.show()
+        
+        # return power
+        return (1 - beta)
+    
+    power(.1, .12, 1000)
 
+    Output:
+    1-beta = 0.44122379261151545
+    ```
 
+    ***Method 2: Analytic Solution***
+    ```
+    def experiment_size(p_null, p_alt, alpha = .05, beta = .20):
+        """
+        Compute the minimum number of samples needed to achieve a desired power
+        level for a given effect size.
+        
+        Input parameters:
+            p_null: base success rate under null hypothesis
+            p_alt : desired success rate to be detected
+            alpha : Type-I error rate
+            beta  : Type-II error rate
+        
+        Output value:
+            n : Number of samples required for each group to obtain desired power
+        """
+        
+        # Get necessary z-scores and standard deviations (@ 1 obs per group)
+        z_null = stats.norm.ppf(1 - alpha) # one-tailed test
+        z_alt  = stats.norm.ppf(beta) # one-tailed test
+        sd_null = np.sqrt(p_null * (1-p_null) + p_null * (1-p_null))
+        sd_alt  = np.sqrt(p_null * (1-p_null) + p_alt  * (1-p_alt) )
+        
+        # Compute and return minimum sample size
+        p_diff = p_alt - p_null
+        n = ((z_null*sd_null - z_alt*sd_alt) / p_diff) ** 2
+        return np.ceil(n)
+    
+    experiment_size(.1, .12)
 
+    Output:
+    n = 2863.0
+    ```
+
+    ***Alternative Method***
+    ```
+    # example of using statsmodels for sample size calculation
+    from statsmodels.stats.power import NormalIndPower
+    from statsmodels.stats.proportion import proportion_effectsize
+
+    # leave out the "nobs" parameter to solve for it
+    NormalIndPower().solve_power(effect_size = proportion_effectsize(.12, .1), alpha = .05, power = 0.8, alternative = 'larger')
+
+    Output:
+    3020.515856462414
+    ```
+
+## Dummy Tests (AA-Test)
+- In a dummy test, you will implement the same steps that you would in an actual experiment to assign the experimental units into groups. However, the experimental manipulation won't actually be implemented, and the groups will be treated equivalently.
+
+    ![image24]
+
+## Non-parametric Tests 
+- As workaround e.g. as a second check on your experimental results
+- They don't rely on many assumptions of the underlying population
+- They can be used in a wider range of circumstances compared to standard tests
+- Bootstrapping and Permutation TEsts as resampling-type tests
+
+***A) Bootstrapping***
+- A bootstrapped sample means drawing points from the original data with replacement until we get as many points as there were in the original data
+- Taking a lot of bootstrapped samples allows us to estimate the sampling distribution for various statistics on our original data
+- The bootstrap procedure is fairly simple and straightforward. Since you don't make assumptions about the distribution of data, it can be applicable for any case you encounter. The results should also be fairly comparable to standard tests
+- For example, let's say that we wanted to create a 95% confidence interval for the 90th percentile from a dataset of 5000 data points. (Perhaps we're looking at website load times and want to reduce the worst cases.)
+
+    To do so:
+    - take a bootstrap sample (i.e., draw 5000 points with replacement from the original data), 
+    - record the 90th percentile
+    -  repeat this a large number of times, let's say 100 000. 
+    - From this bunch of bootstrapped 90th percentile estimates, we form our confidence interval by finding the values that capture the central 95% of the estimates (cutting off 2.5% on each tail).
+
+- Open notebook ```notebooks/Non-Parametric_Tests_Part_1.ipynb``` 
+
+    ```
+    def quantile_ci(data, q, c = .95, n_trials = 1000):
+        """
+        Compute a confidence interval for a quantile of a dataset using a bootstrap
+        method.
+        
+        Input parameters:
+            data: data in form of 1-D array-like (e.g. numpy array or Pandas series)
+            q: quantile to be estimated, must be between 0 and 1
+            c: confidence interval width
+            n_trials: number of bootstrap samples to perform
+        
+        Output value:
+            ci: Tuple indicating lower and upper bounds of bootstrapped
+                confidence interval
+        """
+        
+        # initialize storage of bootstrapped sample quantiles
+        n_points = data.shape[0] # number of data points
+        sample_qs = []# storage of sampled quantiles
+        
+        # For each trial...
+        for _ in range(n_trials):
+            # draw a random sample from the data with replacement...
+            #sample = np.random.choice(data, size=n_points, replace=True)
+            sample = data.sample(n_points, replace=True)
+            
+            # compute the desired quantile...
+            #sample_q = np.percentile(sample, 100 * q)
+            sample_q = sample.quantile(q=0.9)
+            
+            # and add the value to the list of sampled quantiles
+            sample_qs.append(sample_q)
+            
+        # Compute the confidence interval bounds
+        lower_limit = np.percentile(sample_qs, 2.5)
+        upper_limit = np.percentile(sample_qs, 97.5)
+        
+        return (lower_limit, upper_limit)
+    
+    data = pd.read_csv('data/bootstrapping_data.csv')
+    data.head(10)
+
+    # data visualization
+    plt.hist(data['time'], bins = np.arange(0, data['time'].max()+400, 400));
+
+    lims = quantile_ci(data['time'], 0.9)
+    rint(lims)
+
+    Output:
+    (5495.0, 5832.0024999999996)
+    ```
+***B) Permutation Tests***
+- The permutation test is a resampling-type test used to compare the values on an outcome variable between two or more groups.
+- The idea here is that, under the null hypothesis, the outcome distribution should be the same for all groups, whether control or experimental. Thus, we can emulate the null by taking all of the data values as a single large group. Applying labels randomly to the data points (while maintaining the original group membership ratios) gives us one simulated outcome from the null.
+- The rest is similar to the sampling approach used in a standard hypothesis test, 
+- except that we haven't specified a reference distribution to sample from – we're sampling directly from the data we've collected. 
+- Then apply the labels randomly to all the data 
+- Record the outcome statistic many times
+- Compare observed statistic against the simulated statistics. 
+- A p-value is obtained by seeing how many simulated statistic values are as or more extreme than the one actually observed
+- Draw a conclusion 
+
+- For example, try implementing a permutation test in the cells below to test if the 90th percentile of times is statistically significantly smaller for the experimental group, as compared to the control group:
+
+    To do so:
+    - Initialize an empty list to store the difference in sample quantiles as sample_diffs.
+    - Create a loop for each trial:
+
+        - First generate a permutation sample by randomly shuffling the data point labels. ([numpy.random.permutation](https://numpy.org/doc/stable/reference/random/generated/numpy.random.permutation.html) will be useful here.)
+        - Then, compute the qth quantile of the data points that have been assigned to each group based on the permuted labels. Append the difference in quantiles to the sample_diffs list.
+
+    - After gathering the quantile differences for permuted samples, compute the observed difference for the actual data. Then, compute a p-value from the number of permuted sample differences that are less than or greater than the observed difference, depending on the desired alternative hypothesis.
+    
+- Open notebook ```notebooks/Non-Parametric_Tests_Part_1.ipynb``` 
+    ```
+    def quantile_permtest(x, y, q, alternative = 'less', n_trials = 10_000):
+        """
+        Compute a confidence interval for a quantile of a dataset using a bootstrap
+        method.
+        
+        Input parameters:
+            x: 1-D array-like of data for independent / grouping feature as 0s and 1s
+            y: 1-D array-like of data for dependent / output feature
+            q: quantile to be estimated, must be between 0 and 1
+            alternative: type of test to perform, {'less', 'greater'}
+            n_trials: number of permutation trials to perform
+        
+        Output value:
+            p: estimated p-value of test
+        """
+        
+        
+        # initialize storage of bootstrapped sample quantiles
+        sample_diffs = []
+        
+        # For each trial...
+        for _ in range(n_trials):
+            # randomly permute the grouping labels
+            labels = np.random.permutation(y)
+            
+            # compute the difference in quantiles
+            cond_q = np.percentile(x[labels == 0], 100 * q)
+            exp_q  = np.percentile(x[labels == 1], 100 * q)
+            
+            # and add the value to the list of sampled differences
+            sample_diffs.append(exp_q - cond_q)
+        
+        # compute observed statistic
+        cond_q = np.percentile(x[y == 0], 100 * q)
+        exp_q  = np.percentile(x[y == 1], 100 * q)
+        obs_diff = exp_q - cond_q
+        
+        # compute a p-value
+        if alternative == 'less':
+            hits = (sample_diffs <= obs_diff).sum()
+        elif alternative == 'greater':
+            hits = (sample_diffs >= obs_diff).sum()
+        
+        return (hits / n_trials)
+    
+    data = pd.read_csv('../data/permutation_data.csv')
+    data.head(10)
+
+    # data visualization
+    bin_borders = np.arange(0, data['time'].max()+400, 400)
+    plt.hist(data[data['condition'] == 0]['time'], alpha = 0.5, bins = bin_borders)
+    plt.hist(data[data['condition'] == 1]['time'], alpha = 0.5, bins = bin_borders)
+    plt.legend(labels = ['control', 'experiment']);
+
+    # Just how different are the two distributions' 90th percentiles?
+    print(np.percentile(data[data['condition'] == 0]['time'], 90),
+        np.percentile(data[data['condition'] == 1]['time'], 90))
+    
+    quantile_permtest(data['time'], data['condition'], 0.9, alternative = 'less')
+    ```
+
+***C) Rank-Sum Test (Mann-Whitney)***
+- The rank-sum test is different from the two previous approaches. 
+- There is no resampling involved
+- ***The null hypothesis*** says that, for randomly selected values X and Y from two populations, the probability of X being greater than Y is equal to the probability of Y being greater than X. 
+- ***The alternative hypothesis*** says that there's an unequal chance, which can be specified as one- or two-tailed.
+- A very general formulation is to assume that:
+
+    - All the observations from both groups are independent of each other,
+    - The responses are ordinal (i.e., one can at least say, of any two observations, which is the greater),
+    - Under the null hypothesis H0, the distributions of both populations are equal.[3]
+    - The alternative hypothesis H1 is that the distributions are not equal.
+
+    - <img src="https://render.githubusercontent.com/render/math?math=\mu_{U} = \frac{n_{1}n_{2}}{2}" width="100px">
+    - <img src="https://render.githubusercontent.com/render/math?math=\sigma_{U} = \sqrt{\frac{n_{1}n_{2}(n_{1} %2B n_{2} %2B 1)}{12}}" width="200px">
+    - <img src="https://render.githubusercontent.com/render/math?math=z = \frac{U - \mu_{U}}{\sigma_{U}}" width="100px">
+
+    - For large samples, U is approximately normally distributed
+    - Check also scipy stats package [mannwhitneyu](https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.mannwhitneyu.html)
+
+- Open notebook ```notebooks/Non-Parametric_Tests_Part_2.ipynb``` 
+    ```
+    import numpy as np
+    import pandas as pd
+    import scipy.stats as stats
+
+    import matplotlib.pyplot as plt
+    % matplotlib inline
+
+    def ranked_sum(x, y, alternative = 'two-sided'):
+        """
+        Return a p-value for a ranked-sum test, assuming no ties.
+        
+        Input parameters:
+            x: 1-D array-like of data for first group
+            y: 1-D array-like of data for second group
+            alternative: type of test to perform, {'two-sided', less', 'greater'}
+        
+        Output value:
+            p: estimated p-value of test
+        """
+        
+        # compute U
+        u = 0
+        for i in x:
+            wins = (i > y).sum()
+            ties = (i == y).sum()
+            u += wins + 0.5 * ties
+        
+        # compute a z-score
+        n_1 = x.shape[0]
+        n_2 = y.shape[0]
+        mean_u = n_1 * n_2 / 2
+        sd_u = np.sqrt( n_1 * n_2 * (n_1 + n_2 + 1) / 12 )
+        z = (u - mean_u) / sd_u
+        
+        # compute a p-value
+        if alternative == 'two-sided':
+            p = 2 * stats.norm.cdf(-np.abs(z))
+        if alternative == 'less':
+            p = stats.norm.cdf(z)
+        elif alternative == 'greater':
+            p = stats.norm.cdf(-z)
+        
+        return p
+
+    data = pd.read_csv('data/permutation_data.csv')
+    data.head(10)
+
+    # data visualization
+    bin_borders = np.arange(0, data['time'].max()+400, 400)
+    plt.hist(data[data['condition'] == 0]['time'], alpha = 0.5, bins = bin_borders)
+    plt.hist(data[data['condition'] == 1]['time'], alpha = 0.5, bins = bin_borders)
+    plt.legend(labels = ['control', 'experiment']);
+
+    ranked_sum(data[data['condition'] == 0]['time'],
+           data[data['condition'] == 1]['time'],
+           alternative = 'greater')
+
+    Output:
+    0.0017522265022961059
+    ```
+
+***Sign Test***
+- In the sign test, we don't care how large differences are between groups, only which group takes a larger value. 
+- So comparisons of 0.21 vs. 0.22 and 0.21 vs. 0.31 are both counted equally as a point in favor of the second group. 
+- This makes the sign test a fairly weak test, though also a test that can be applied fairly broadly. 
+- It's most useful when we have very few observations to draw from and can't make a good assumption of underlying distribution characteristics. 
+- For example, you might use a sign test as an additional check on click rates that have been aggregated on a daily basis.
+- The count of victories for a particular group can be modeled with the binomial distribution. 
+- Under the null hypothesis, it is equally likely that either group has a larger value: the binomial distribution's success parameter is 𝑝=0.5
+
+- Open notebook ```notebooks/Non-Parametric_Tests_Part_2.ipynb``` 
+    ```
+    import numpy as np
+    import pandas as pd
+    import scipy.stats as stats
+
+    import matplotlib.pyplot as plt
+    % matplotlib inline
+
+    def sign_test(x, y, alternative = 'two-sided'):
+        """
+        Return a p-value for a ranked-sum test, assuming no ties.
+        
+        Input parameters:
+            x: 1-D array-like of data for first group
+            y: 1-D array-like of data for second group
+            alternative: type of test to perform, {'two-sided', less', 'greater'}
+        
+        Output value:
+            p: estimated p-value of test
+        """
+        
+        # compute parameters
+        n = x.shape[0] - (x == y).sum()
+        k = (x > y).sum() - (x == y).sum()
+
+        # compute a p-value
+        if alternative == 'two-sided':
+            p = min(1, 2 * stats.binom(n, 0.5).cdf(min(k, n-k)))
+        if alternative == 'less':
+            p = stats.binom(n, 0.5).cdf(k)
+        elif alternative == 'greater':
+            p = stats.binom(n, 0.5).cdf(n-k)
+        
+        return p
+    
+    data = pd.read_csv('data/signtest_data.csv')
+    data.head()
+
+    # data visualization
+    plt.plot(data['day'], data['control'])
+    plt.plot(data['day'], data['exp'])
+    plt.legend()
+
+    plt.xlabel('Day of Experiment')
+    plt.ylabel('Success rate');
+
+    sign_test(data['control'], data['exp'], 'less')
+
+    Output:
+    0.089782714843750014
+    ```
 
 
 
