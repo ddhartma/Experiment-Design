@@ -25,7 +25,8 @@
 [image24]: assets/dummy_test.png "image24"
 [image25]: assets/multiple_metrics.png "image25"
 [image26]: assets/multiple_metrics_2.png "image26"
-[image27]: assets/early_stopping.png "image2"
+[image27]: assets/early_stopping.png "image27"
+[image28]: assets/metrics_ab.png "image28"
 
 
 # Experimental Design
@@ -72,22 +73,24 @@ Within the experimental design portion of this course, there are three lessons:
     - [Early Stopping](#Early_Stopping)
     
 
-- [A/B Testing Case Study](#A_B_Testing)
+- [A/B Testing Case Study I](#A_B_Testing)
     - [Overview](#OverviewAB)
     - [Experiment I](#Experiment_I)
     - [Metric and Hypothesis](#Metric_and_Hypothesis)
     - [Experiment II](#Experiment_II)
     - [Multiple Tests](#Multiple_Tests)
     - [Difficulties in A/B Testing](#Difficulties_in_A_B_Testing)
-    - [](#)
-    - [](#)
-    - [](#)
-    - [](#)
-    - [](#)
-    - [](#)
-    - [](#)
+    
 
-
+- [A/B Testing Case Study II](#A_B_Testing_II)
+    - [Defining the Goal](#Defining_the_Goal)
+    - [Building a Funnel](#Building_a_Funnel)
+    - [Deciding on Metrics](#Deciding_on_Metrics)
+    - [Experiment Sizing](#Experiment_Sizing)
+    - [Validity, Bias, and Ethics](#Validity_Bias_Ethics)
+    - [Analyze Data](#Analyze_Data)
+    - [Draw Conclusions](#Draw_Conclusions)
+   
 - [Setup Instructions](#Setup_Instructions)
 - [Acknowledgments](#Acknowledgments)
 - [Further Links](#Further_Links)
@@ -511,6 +514,7 @@ Statsistics is not only needed to analyse the data. It is also needed to set up 
 
 
 ## Experiment Size <a name="Experiment_Size"></a>
+- Check this helpful [link](https://www.itl.nist.gov/div898/handbook/prc/section2/prc222.htm) 
 - Practical significance boundaries can be used to plan an experiment.
 - By knowing how many observations we need in order to detect our desired effect to our desired level of reliability, we can see how long we would need to run our experiment and whether or not it is feasible.
 - Current click-trough-rate = 10%
@@ -985,7 +989,7 @@ Bonferoni correction
 
 - Open notebook ```notebooks/Early_Stopping.ipynb``` 
 
-# A/B Testing Case Study <a name="A_B_Testing"></a>
+# A/B Testing Case Study I <a name="A_B_Testing"></a>
 ## Overview <a name="OverviewAB"></a>
 - A/B tests are used to test changes on a web page by running an experiment where a control group sees the old version, while the experiment group sees the new version. 
 - A metric is then chosen to measure the level of engagement from users in each group. 
@@ -1118,6 +1122,166 @@ For further metrics evaluation check:
     - ***Long enough run time*** for the experiment to account for changes in behavior based on time of day/week or seasonal events.
     - ***Practical significance*** of a conversion rate (the cost of launching a new feature vs. the gain from the increase in conversion)
     - ***Consistency*** among test subjects in the control and experiment group (imbalance in the population represented in each group can lead to situations like [Simpson's Paradox](https://en.wikipedia.org/wiki/Simpson%27s_paradox))
+
+
+
+
+
+# A/B Testing Case Study II <a name="A_B_Testing_II"></a>
+
+Setting: 
+- Fictional productivity software company 
+- Goal: increase revenue. 
+- At the moment: Software can be downloaded free of charge, for a 7-day trial. After the end of the trial pay for a license 
+- Idea: change the layout of the homepage to make software more attractive. More downloads more potential purchases 
+
+Work to do:
+- Funnel
+- Define metrics to track
+- Experiment sizing
+- Perform statistical tests
+- Conclusions wrt the effectiveness of the new homepage
+
+## Defining the Goal <a name="Defining_the_Goal"></a>
+Before we do anything else, the first thing we should do is specify the objective or goal of our study:
+
+    Optimizing homepage layout will increase the number of users and hence purchases
+
+## Building a Funnel <a name="Building_a_Funnel"></a>
+= activities that a user will take on the site that are relevant to measuring the success (wrt the goal)
+
+- A straightforward flow might include the following steps:
+
+    1. Visit homepage
+    2. Visit download page
+    3. Sign up for an account
+    4. Download software
+    5. After 7-day trial, software takes user to license-purchase page
+    6. Purchase license
+
+- Possible problems:
+    - User might drop from the flow after each step
+
+- Atypical events: 
+    - might be users on the homepage who aren't new users 
+    - Users don't come back after exactly seven days. Some come back earlier or some later
+
+## Deciding on Metrics <a name="Deciding_on_Metrics"></a>
+- Based on the Funnel 
+    
+    - Choose ***unit of diversion***: the point at which we divide observations into control and experiment groups groups
+    - This can affect metrics as well
+    - What metrics to track the ***success*** of the experimental manipulation
+    - Define ***invariant*** and ***evaluation metrics***
+
+- A ***cookie-based diversion*** is best for control and experimental group splitting.
+    - We can split randomly visitors on their ***initial visit*** 
+    - it's fairly reliable for tracking
+
+- ***Metrics***: keep track of the number of cookies that are recorded in different parts of the website
+    - number of cookies on the homepage (absolute count) 
+    - number of cookies on the download page (absolute count)
+    - number of cookies on the account registration page (absolute count)
+    - the number of licenses purchased through the user accounts (absolute count)
+    - software includes usage statistics that we could track
+    - proportion of downloads out of all homepage visits (ratio)
+    - License purchases vs. number of registered users, downloads or number of cookies (ratio)
+
+- ***Invariant metrics*** are measures that are equal in control and experimental groups
+- ***Evaluation metrics*** are measures are different in both groups and measure experimental manipulation
+
+    ![image28]
+
+## Experiment Sizing <a name="Experiment_Sizing"></a>
+- take a look at the running time of the experiment
+
+
+    Historical data
+    - 3250 unique visitors per day, with slightly more visitors on Friday through Monday, than the rest of the week. 
+    - There are about 520 software downloads per day (a .16 rate) 
+    - 65 licenses purchased each day (a .02 rate). 
+    - In an ideal case, both the download rate and license purchase rate should increase with the new homepage; 
+    - A statistically significant negative change should be a sign to not deploy the homepage change. 
+    - However, if only one of our metrics shows a statistically significant positive change we should be happy enough to deploy the new homepage.
+    - Bonferonni correction is needed due to multiple testing
+
+
+    Goal: 
+    - detect an increase of 50 downloads per day (up to 570 per day, or a .175 rate). 
+    - How many days do we need to collect data at 5% Type I error rate and at 80% power?
+
+    Calculation:
+    - start rate = 0.16
+    - goal rate  = 0.175
+    - Bonferonni correction -> 2 metrics -> alpha = 0.025
+    ```
+    # example of using statsmodels for sample size calculation
+    from statsmodels.stats.power import NormalIndPower
+    from statsmodels.stats.proportion import proportion_effectsize
+
+    # leave out the "nobs" parameter to solve for it
+    NormalIndPower().solve_power(effect_size = proportion_effectsize(.175, .16), alpha = .025, power = 0.8,
+                                alternative = 'larger')
+    Output: 
+    9724 visitors
+    ```
+    - visitors per day in each group ~ 3250/2 = 1625
+    - days needed = 9724 / 1625 ~ 6
+
+
+    Possible problem:
+
+    - Time between download and purchase a license about seven days.
+
+    Solution
+
+    - Add approximately seven days of safety
+
+## Validity, Bias, and Ethics <a name="Validity_Bias_Ethics"></a>
+
+Validity:
+- ***Construct validity***: the evaluation metrics are directly aligned with the experimental goals
+- ***Internal validity***: is maintained by performing an experiment with properly-handled randomization
+- ***External validity***: given, as we are drawing from the full site population and there's no other population involved
+
+Bias:
+- ***novelty bias*** as being a potential issue. However, we don't expect users to come back to the homepage regularly. Downloading and license purchasing are actions we expect to only occur once per user, so there's no real 'return rate' to worry about. 
+
+Ethic issues:
+- A standard popup to let visitors know that cookies are used to track user experience on the site will likely suffice. 
+- The largest ethics principle we should be concerned about is data sensitivity.
+- No sensitive data is required for the metrics, 
+- Do evaluations without investigaing any individual outcomes.
+
+## Analyze Data <a name="Analyze_Data"></a>
+- data was collected for 29 days
+- daily counts for 
+    - The number of unique cookies 
+    - Number of downloads
+    - Number of license purchases 
+- daily counts are attributed to each group: the experimental group with the new homepage, or the control group with the old homepage
+
+- Check the invariant metric
+    - The number of cookies assigned to each group
+    - If there is a statistically significant difference detected, then we shouldn't move on to the evaluation metrics right away
+    - Possible issues: problem with the group-assignment procedure, or with the cookies
+
+- Evaluation Metrics
+    - Assuming that the invariant metric passed inspection, 
+    - Download rate (total number of downloads divided by the number of cookies)
+    - License purchasing rate (number of licenses divided by the number of cookies)
+     
+## Draw Conclusions <a name="Draw_Conclusions"></a>
+
+
+
+
+
+
+
+
+
+
 
 
 
