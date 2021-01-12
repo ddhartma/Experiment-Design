@@ -23,6 +23,9 @@
 [image22]: assets/practical_significance_2.png "image22"
 [image23]: assets/stat_power.png "image23"
 [image24]: assets/dummy_test.png "image24"
+[image25]: assets/multiple_metrics.png "image25"
+[image26]: assets/multiple_metrics_2.png "image26"
+[image27]: assets/early_stopping.png "image2"
 
 
 # Experimental Design
@@ -262,6 +265,36 @@ There's a mnemonic called SMART for teams to plan out projects that also happens
 # Statistical Considerations in Testing <a name="Statistical_Considerations_in_Testing"></a>
 Statsistics is not only needed to analyse the data. It is also needed to set up an experiment.
 
+## Binomial Distribution
+- Notation 
+
+    <img src="https://render.githubusercontent.com/render/math?math=X ~ B(n,p) = {n\choose k} \cdot p^{k} \cdot (1-p)^{n-k}" height="40px">
+
+- Mean
+    
+    <img src="https://render.githubusercontent.com/render/math?math=\m =n \cdot p" height="20px">
+
+- Standard Deviation
+    
+    <img src="https://render.githubusercontent.com/render/math?math=\m =\sqrt{n \cdot p \cdot (1 - p)}" height="50px">
+
+
+## Computing p-value via stats.norm
+- Statmodels offers an easy approach to calculate p values
+
+    'two-sided':
+    ```
+    p = 2 * stats.norm.cdf(-np.abs(z))
+    ````
+    'less'
+    ```
+    p = stats.norm.cdf(z)
+    ```
+    'greater'
+    ```
+    p = stats.norm.cdf(-z) = 1 - stats.norm.cdf(z)
+    ```
+
 ## Statistical significance?
 - Let's say that we've collected data for a web-based experiment.
 - Experiment: Test change in layout of a product information page 
@@ -275,117 +308,142 @@ Statsistics is not only needed to analyse the data. It is also needed to set up 
 - click 1 -> click
 
 
-### Checking Invariant metric
+## Checking Invariant metric
 - Open notebook ```notebooks/Statistical_Significance.ipynb```
-
-A) Analytic Approach
-```
-# get number of trials and number of 'successes'
-n_obs = data.shape[0]
-
-n_control = data.groupby('condition').size()[0]
-print(n_control)
-
-# Compute a z-score and p-value
-# probability of success
-p = 0.5
-
-# sd for binomial distribution
-sd = np.sqrt(p * (1-p) * n_obs)
-
-# z-score
-# to get a precise p-value, 0.5 = continuity correction, was added the total count before computing the area underneath the curve
-z = ((n_control + 0.5) - p * n_obs) / sd
-print(z)
-
-# p-value fpr two-sided test
-print(2 * stats.norm.cdf(z))
-
-Outcome:
--0.506217597735
-0.612703902554
-```
-
-B) Simulation Approach
-```
-# get number of trials and number of 'successes'
-n_obs = data.shape[0]
-n_control = data.groupby('condition').size()[0]
-
-# # simulate outcomes under null, compare to observed outcome
-p = 0.5
-n_trials = 200_000
-
-samples = np.random.binomial(n_obs, p, n_trials)
-
-print(np.logical_or(samples <= n_control, samples >= (n_obs - n_control)).mean())
-
-Outcome:
-0.611725
-```
-
-### Checking the Evaluation Metric 
-
-- Open notebook ```notebooks/Statistical_Significance.ipynb```
-
-```
-p_click = data.groupby('condition').mean()['click']
-p_click
-
-Outcome:
-condition
-0    0.079430
-1    0.112205
-Name: click, dtype: float64
-```
-
-```
-p_click[1] - p_click[0]
-Outcome:
-0.03277498917523293
-```
 
 ***A) Analytic Approach***
-- pooled click-through rate
-- pooled standard deviation
-- Computing the z-score and resulting p-value without a continuity correction should be closer to the simulation's outcomes
-```
-# get number of trials and overall 'success' rate under null
-n_control = data.groupby('condition').size()[0]
-n_exper = data.groupby('condition').size()[1]
-p_null = data['click'].mean()
+- Use the exact binomial distribution (via mean, sd and z-score) to compute a p-value for the test
+- Alternative: use the normal distribution approximation (possible due large sample size and the central limit theorem)
+- To get a precise p-value, perform a continuity correction, either adding or subtracting 0.5 to the total count before computing the area underneath the curve
+    ```
+    # import packages
+    import numpy as np
+    import pandas as pd
+    import scipy.stats as stats
+    from statsmodels.stats import proportion as proptests
+    import matplotlib.pyplot as plt
+    % matplotlib inline
 
-# compute standard error, z-score, and p-value
-se_p = np.sqrt(p_null * (1-p_null) * (1/n_control + 1/n_exper))
+    # import data
+    data = pd.read_csv('../data/statistical_significance_data.csv')
+    data.head(10)
 
-z = (p_click[1] - p_click[0]) / se_p
-print(z)
-print(1-stats.norm.cdf(z))
+    # get number of trials 
+    n_obs = data.shape[0]
 
-Outcome:
-1.75718873962
-0.0394428219746
-``` 
+    # get and number of 'successes'
+    n_control = data.groupby('condition').size()[0]
+
+    # Compute a z-score and p-value
+    # probability of success
+    p = 0.5
+
+    # sd for binomial distribution
+    sd = np.sqrt(p * (1-p) * n_obs)
+
+    # z-score
+    # to get a precise p-value, 0.5 = continuity correction, was added the total count before computing the area underneath the curve
+    z = ((n_control + 0.5) - p * n_obs) / sd
+    print(z)
+
+    # p-value for two-sided test
+    print(2 * stats.norm.cdf(z))
+
+    Outcome:
+    z = -0.506217597735
+    p = 0.612703902554
+    # We fail to reject the Null hypothesis
+    ```
 
 ***B) Simulation Approach***
-```
-# get number of trials and overall 'success' rate under null
-n_control = data.groupby('condition').size()[0]
-n_exper = data.groupby('condition').size()[1]
-p_null = data['click'].mean()
+- Simulate the number of visitors that would be assigned to each group via np.random.binomial samplimng
+- assume, p=0.5, 200.000 repetitions
+    ```
+    # get number of trials and number of 'successes'
+    n_obs = data.shape[0]
+    n_control = data.groupby('condition').size()[0]
 
-# simulate outcomes under null, compare to observed outcome
-n_trials = 200_000
+    # # simulate outcomes under null, compare to observed outcome
+    p = 0.5
+    n_trials = 200_000
 
-ctrl_clicks = np.random.binomial(n_control, p_null, n_trials)
-exp_clicks = np.random.binomial(n_exper, p_null, n_trials)
-samples = exp_clicks / n_exper - ctrl_clicks / n_control
+    samples = np.random.binomial(n_obs, p, n_trials)
 
-print((samples >= (p_click[1] - p_click[0])).mean())
+    print(np.logical_or(samples <= n_control, samples >= (n_obs - n_control)).mean())
 
-Outcome:
-0.039785
-```
+    Outcome:
+    0.611725
+    ```
+
+## Checking the Evaluation Metric 
+
+- Open notebook ```notebooks/Statistical_Significance.ipynb```
+
+    ```
+    p_click = data.groupby('condition').mean()['click']
+    p_click
+
+    Outcome:
+    condition
+    0    0.079430
+    1    0.112205
+    Name: click, dtype: float64
+    ```
+
+    ```
+    p_click[1] - p_click[0]
+    Outcome:
+    0.03277498917523293
+    ```
+
+***A) Analytic Approach***
+- Use the exact binomial distribution (via mean, sd and z-score) to compute a p-value for the test
+- Computing the z-score and resulting p-value without a continuity correction 
+- pooled click-through rate
+- pooled standard deviation
+
+    ```
+    # get number of trials and overall 'success' rate under null
+    n_control = data.groupby('condition').size()[0]
+    n_exper = data.groupby('condition').size()[1]
+    p_null = data['click'].mean()
+
+    # compute standard error, z-score, and p-value
+    se_p = np.sqrt(p_null * (1-p_null) * (1/n_control + 1/n_exper))
+
+    z = (p_click[1] - p_click[0]) / se_p
+    print(z)
+    print(1-stats.norm.cdf(z))
+
+    Outcome:
+    z = 1.75718873962
+    p = 0.0394428219746
+    # We reject the Null: New feature is significant
+    ``` 
+
+***B) Simulation Approach***
+- Simulate the overall click-through rate that would be assigned to each group via np.random.binomial samplimng
+- samples = overall click-through rate 
+
+    ```
+    # get number of trials and overall 'success' rate under null
+    n_control = data.groupby('condition').size()[0]
+    n_exper = data.groupby('condition').size()[1]
+    p_null = data['click'].mean()
+
+    # simulate outcomes under null, compare to observed outcome
+    n_trials = 200_000
+
+    ctrl_clicks = np.random.binomial(n_control, p_null, n_trials)
+    exp_clicks = np.random.binomial(n_exper, p_null, n_trials)
+    samples = exp_clicks / n_exper - ctrl_clicks / n_control
+
+    print((samples >= (p_click[1] - p_click[0])).mean())
+
+    Outcome:
+    p = 0.039785
+    # We reject the Null: New feature is significant
+    ```
 
 ## Practical statistical significance?
 - Even there is statistical significance of a new feature, it does not mean that it is worth to implement the new feature. 
@@ -543,10 +601,28 @@ Outcome:
     ![image24]
 
 ## Non-parametric Tests 
-- As workaround e.g. as a second check on your experimental results
-- They don't rely on many assumptions of the underlying population
+- A parametric test uses a population’s parameters (for example, the mean or standard deviation)
+- A [non parametric test](https://www.statisticshowto.com/parametric-and-non-parametric-data/) does not use info about the underlying distribution (for example, that the data comes from a normal distribution). 
 - They can be used in a wider range of circumstances compared to standard tests
-- Bootstrapping and Permutation TEsts as resampling-type tests
+- Bootstrapping and Permutation Tests as resampling-type tests
+- Rank-Sum and Sign Test as non resampling-type tests
+
+### When to use it?
+- When your data isn’t normal
+- As a second proof
+- One or more assumptions of a parametric test have been violated
+- Your sample size is too small to run a parametric test
+- Your data has outliers that cannot be removed.
+- You want to test for the median rather than the mean (you might want to do this if you have a very skewed distribution).
+
+### Types
+| Nonparametric Test     | Parametric Alternative     |
+| :------------- | :------------- |
+| Bootstrapping  |  all kinds possible |
+|  Permutation Tests |   |
+| 1-sample [sign test](https://www.statisticshowto.com/sign-test/)       |  	[One-sample Z-test](https://www.statisticshowto.com/one-sample-z-test/), One sample t-test       |
+| 1-sample [Wilcoxon Signed Rank test](https://www.statisticshowto.com/wilcoxon-signed-rank-test/) |	[One-sample Z-test](https://www.statisticshowto.com/one-sample-z-test/), One sample t-test     |
+| [Mann-Whitney test](https://www.statisticshowto.com/mann-whitney-u-test/) 	| [Independent samples t-test](https://www.statisticshowto.com/independent-samples-t-test/)  |
 
 ***A) Bootstrapping***
 - A bootstrapped sample means drawing points from the original data with replacement until we get as many points as there were in the original data
@@ -700,16 +776,14 @@ Outcome:
     ```
 
 ***C) Rank-Sum Test (Mann-Whitney)***
-- The rank-sum test is different from the two previous approaches. 
-- There is no resampling involved
-- ***The null hypothesis*** says that, for randomly selected values X and Y from two populations, the probability of X being greater than Y is equal to the probability of Y being greater than X. 
-- ***The alternative hypothesis*** says that there's an unequal chance, which can be specified as one- or two-tailed.
+- Use this test to compare differences between two independent groups when dependent variables are either ordinal or continuous.
+- ***The null hypothesis*** is that the two samples come from the same population (i.e. that they both have the same median) 
+- ***The alternative hypothesis*** is that the probability is 50% that a randomly drawn member of the first population will exceed a member of the second population. 
 - A very general formulation is to assume that:
 
     - All the observations from both groups are independent of each other,
     - The responses are ordinal (i.e., one can at least say, of any two observations, which is the greater),
-    - Under the null hypothesis H0, the distributions of both populations are equal.[3]
-    - The alternative hypothesis H1 is that the distributions are not equal.
+    
 
     - <img src="https://render.githubusercontent.com/render/math?math=\mu_{U} = \frac{n_{1}n_{2}}{2}" width="100px">
     - <img src="https://render.githubusercontent.com/render/math?math=\sigma_{U} = \sqrt{\frac{n_{1}n_{2}(n_{1} %2B n_{2} %2B 1)}{12}}" width="200px">
@@ -717,6 +791,14 @@ Outcome:
 
     - For large samples, U is approximately normally distributed
     - Check also scipy stats package [mannwhitneyu](https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.mannwhitneyu.html)
+
+- Algorithm for computing thge U-statistic:
+
+    1. Name the sample with the smaller ranks “sample 1” and the sample with the larger ranks “sample 2”. Choosing the sample with the smaller ranks to be “sample 1” is optional, but it makes the computation easier.
+    2. Take the first observation in sample 1. Count how many observations in sample 2 are smaller than it. If the observations are equal, count it as one half. For example, if you have ten that are less and two that are equal: 10 + 2(1/2) = 11.
+    3. Repeat Step 2 for all observations in sample 1.
+    4. Add up all of your totals from Steps 2 and 3. This is the U statistic.
+
 
 - Open notebook ```notebooks/Non-Parametric_Tests_Part_2.ipynb``` 
     ```
@@ -779,17 +861,22 @@ Outcome:
 
     Output:
     0.0017522265022961059
+    # We have evidence to reject the Null hypothesis
     ```
 
 ***Sign Test***
-- In the sign test, we don't care how large differences are between groups, only which group takes a larger value. 
+- The sign test compares the sizes of two groups.
+- SIze differences between groups are not important, only which group takes a larger value. 
 - So comparisons of 0.21 vs. 0.22 and 0.21 vs. 0.31 are both counted equally as a point in favor of the second group. 
-- This makes the sign test a fairly weak test, though also a test that can be applied fairly broadly. 
-- It's most useful when we have very few observations to draw from and can't make a good assumption of underlying distribution characteristics. 
+- A fairly weak test
+- Use this test to estimate the median of a population and compare it to a reference value or target value.
+- Most useful when only a few observations given and underlying distribution characteristics is not clear. 
 - For example, you might use a sign test as an additional check on click rates that have been aggregated on a daily basis.
 - The count of victories for a particular group can be modeled with the binomial distribution. 
-- Under the null hypothesis, it is equally likely that either group has a larger value: the binomial distribution's success parameter is 𝑝=0.5
-
+- The data should be from two samples.
+- The two dependent samples should be paired or matched. For example, depression scores from before a medical procedure and after.
+    - H0: No difference in median of the signed differences.
+    - H1: Median of the signed differences is less than zero.
 - Open notebook ```notebooks/Non-Parametric_Tests_Part_2.ipynb``` 
     ```
     import numpy as np
@@ -812,7 +899,7 @@ Outcome:
             p: estimated p-value of test
         """
         
-        # compute parameters
+        # compute parameters for Binominal distribution, subtract events where there is no value difference
         n = x.shape[0] - (x == y).sum()
         k = (x > y).sum() - (x == y).sum()
 
@@ -842,8 +929,23 @@ Outcome:
     Output:
     0.089782714843750014
     ```
+## Analyzing Multiple Metrics
+- Two metrics, each set up with a 5% Type I error rate -> chance for a falsely declared significant effect: 0.0975
+    
+    ![image25]
 
+Bonferoni correction
+- <img src="https://render.githubusercontent.com/render/math?math=\alpha_{ind} = \frac{\alpha_{over}}{n}" width="150px">
 
+ Šidák correction
+ - <img src="https://render.githubusercontent.com/render/math?math=\alpha_{ind} = 1 - (1- \alpha_{over})^{1/n}" width="290px">
+
+    ![image26]
+
+## Early Stopping
+- If you stop experiments early before data collection is complete (because the test is showing statistical significance), you run the risk of a significant increase in your Type I error rate
+
+    ![image27]
 
 # A/B Testing Case Study <a name="A_B_Testing"></a>
 ## Overview
@@ -872,6 +974,7 @@ Outcome:
     ![image17]
 
 - Open notebook under ```notebooks/Homepage Experiment Data.ipynb```
+
 
 
 ## Experiment II
