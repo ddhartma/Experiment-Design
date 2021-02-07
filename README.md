@@ -1417,3 +1417,6 @@ Data Visualization
 * [10 Python Data Visualization Libraries for Any Field | Mode](https://mode.com/blog/python-data-visualization-libraries/)
 * [5 Quick and Easy Data Visualizations in Python with Code](https://towardsdatascience.com/5-quick-and-easy-data-visualizations-in-python-with-code-a2284bae952f)
 * [The Best Python Data Visualization Libraries](https://www.fusioncharts.com/blog/best-python-data-visualization-libraries/)
+
+Readme
+* [python-tabulate to convert pandas DataFrames to Readme tables](https://pypi.org/project/tabulate/)
